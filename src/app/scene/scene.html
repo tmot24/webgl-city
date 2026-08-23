@@ -1,0 +1,9 @@
+<canvas #canvas class="scene__canvas"></canvas>
+
+<!--Слой UI поверх canvas: сюда лягут Angular-компоненты (кнопки, лог измерений).
+    pointer-events отключены на слое целиком, а конкретные контролы вернут
+    себе point-events: auto - тогда клики по "пустом" месту уходят в canvas.
+-->
+<div>
+  <ng-content />
+</div>
