@@ -142,7 +142,6 @@ const typeMap = new Map<Function, GLenum>([
   [Uint16Array, WebGL2RenderingContext.UNSIGNED_SHORT],
   [Int32Array, WebGL2RenderingContext.INT],
   [Uint32Array, WebGL2RenderingContext.UNSIGNED_INT],
-  [Float16Array, WebGL2RenderingContext.HALF_FLOAT],
 ]);
 
 function getGLTypeFromArrayBuffer({ data }: { data: ArrayBufferView }): GLenum {
