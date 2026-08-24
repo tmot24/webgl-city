@@ -1,4 +1,12 @@
-import { afterNextRender, Component, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
+import {
+  afterNextRender,
+  afterRenderEffect,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  viewChild,
+} from '@angular/core';
 import { injectCanvasSize } from '../../inject/inject-canvas-size';
 
 @Component({
@@ -21,14 +29,14 @@ export class Scene {
         const gl = this.canvasRef().nativeElement.getContext('webgl2');
         if (!gl) throw new Error('WebGL2 не поддерживается этим браузером');
         this.gl = gl;
-        gl.clearColor(0.05, 0.06, 0.08, 1);
+        gl.clearColor(0, 0, 0, 0.5);
         this.draw(); // первый кадр сразу, без ожидания ресайза
         this.destroyRef.onDestroy(() => gl.getExtension('WEBGL_lose_context')?.loseContext());
       },
     });
 
     // Реактивно: перерисовка при изменении размера (draw() читает size())
-    afterNextRender({
+    afterRenderEffect({
       write: () => this.draw(),
     });
   }

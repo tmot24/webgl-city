@@ -10,10 +10,10 @@ export interface Building {
   cz: number;
   // размер по X
   width: number;
-  // размер по Z
-  depth: number;
   // высота (по Y, вверх)
   height: number;
+  // размер по Z
+  depth: number;
 }
 
 // Разметка дорог регулярной сеткой: центральные линии + ширина.
