@@ -1,7 +1,13 @@
 import { Component, ElementRef, viewChild } from '@angular/core';
-import { generateCity } from '../../helper/city/generate-city';
-import { buildInstanceData } from '../../helper/city/build-instance-data';
+import { generateCity } from '../../city/generate-city';
+import { buildInstanceData } from '../../city/build-instance-data';
 import { injectCityRender } from '../../inject/inject-city-render';
+import { constructPlaneGeometry } from '../../helper/geometry/construct-plane-geometry';
+import { buildRoadGeometry } from '../../road/build-road-geometry';
+import { vec3 } from 'gl-matrix';
+
+// Запас травы за границей застройки, метры
+const GROUND_MARGIN = 100;
 
 @Component({
   imports: [],
@@ -16,9 +22,27 @@ export class Scene {
     const city = generateCity({ seed: 1 });
     const instanceData = buildInstanceData({ buildings: city.buildings });
 
+    const { bounds } = city;
+    const groundGeometry = constructPlaneGeometry({
+      width: bounds.maxX - bounds.minX + GROUND_MARGIN * 2,
+      depth: bounds.maxZ - bounds.minZ + GROUND_MARGIN * 2,
+    });
+    const roadGeometry = buildRoadGeometry({
+      road: city.road,
+      bounds,
+    });
+
     injectCityRender({
       canvasRef: this.canvasRef,
       instanceData,
+      ground: {
+        groundGeometry,
+        groundColor: vec3.fromValues(0.36, 0.55, 0.32),
+      },
+      road: {
+        roadGeometry,
+        roadColor: vec3.fromValues(0.25, 0.25, 0.27),
+      },
     });
   }
 }

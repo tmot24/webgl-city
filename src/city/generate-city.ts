@@ -1,5 +1,5 @@
 import { Building, City, GenerateCityParams } from './generate-city.types';
-import { createRng } from '../geometry/create-rng';
+import { createRng } from '../helper/geometry/create-rng';
 
 export function generateCity({
   seed = 1,

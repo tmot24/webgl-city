@@ -8,39 +8,35 @@ import {
   Signal,
   WritableSignal,
 } from '@angular/core';
-import { InstanceData } from '../helper/city/build-instance-data';
+import { InstanceData } from '../city/build-instance-data';
 import { vec3 } from 'gl-matrix';
-import {
-  BUILDING_ATTRIBUTES_LOCATION,
-  BuildingMaterial,
-  createBuildingMaterial,
-} from '../helper/material/building-material/building-material';
 import { injectCanvasSize } from './inject-canvas-size';
 import { injectOrbitCamera } from './inject-orbit-camera';
 import { createViewProjectionMatrix } from '../helper/matrix/create-view-projection-matrix';
-import { constructCubeGeometry } from '../helper/geometry/construct-cube-geometry';
-import { createProgram } from '../helper/core/create-program';
-import buildingVertex from '../helper/material/building-material/building-material.vert';
-import buildingFragment from '../helper/material/building-material/building-material.frag';
-import { createVAO } from '../helper/mesh/create-vao';
+import { BuildingRenderer, createBuildingRenderer } from '../helper/render/create-building-renderer';
+import { createSurfaceRenderer, SurfaceRenderer } from '../helper/render/create-surface-renderer';
+import { FlatGeometry } from '../road/build-road-geometry';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
   instanceData: InstanceData;
+  ground: {
+    groundGeometry: FlatGeometry;
+    groundColor: vec3;
+  };
+  road: {
+    roadGeometry: FlatGeometry;
+    roadColor: vec3;
+  };
   // направление НА свет (нормализованное)
   lightDirection?: WritableSignal<vec3>;
-}
-
-// Всё, что готовится один раз в afterNextRender и нужно каждый кадр
-interface Prepared {
-  program: WebGLProgram;
-  vao: WebGLVertexArrayObject;
-  material: BuildingMaterial;
 }
 
 export function injectCityRender({
   canvasRef,
   instanceData,
+  ground: { groundGeometry, groundColor },
+  road: { roadGeometry, roadColor },
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
   lightDirection = signal(vec3.normalize(vec3.create(), vec3.fromValues(0.6, 1.0, 0.4))),
 }: InjectCityRender) {
@@ -55,10 +51,9 @@ export function injectCityRender({
   // near/far под масштаб города: ближайшее здание дальше ~1700 м, поэтому near можно поднять - меньше z-fighting
   const viewProjection = createViewProjectionMatrix({ canvasRef, viewMatrix, near: 10, far: 6000 });
 
-  const geometry = constructCubeGeometry();
-
   let gl: WebGL2RenderingContext | null = null;
-  let prepared: Prepared | null = null;
+  let buildings: BuildingRenderer | null = null;
+  let surface: SurfaceRenderer | null = null;
 
   // ОДИН РАЗ: контекст, программа, VAO (куб + экземпляр-атрибуты), материал
   afterNextRender({
@@ -67,68 +62,40 @@ export function injectCityRender({
       if (!context) throw new Error('WebGL2 не поддерживается этим браузером');
       gl = context;
 
-      context.enable(context.DEPTH_TEST);
-      context.clearColor(0.53, 0.7, 0.87, 1); // небесный фон
+      gl.enable(gl.DEPTH_TEST);
+      gl.clearColor(0.53, 0.7, 0.87, 1); // небесный фон
 
-      const program = createProgram({ gl: context, vertex: buildingVertex, fragment: buildingFragment });
-      const { vao, buffers, indexBuffer } = createVAO({
-        gl: context,
-        attributes: [
+      buildings = createBuildingRenderer({ gl, instanceData });
+      surface = createSurfaceRenderer({
+        gl,
+        surfaces: [
           {
-            // per-vertex (из геометрии куба)
-            location: BUILDING_ATTRIBUTES_LOCATION.position,
-            srcData: geometry.position,
-            size: 3,
+            geometry: groundGeometry,
+            color: groundColor,
           },
           {
-            location: BUILDING_ATTRIBUTES_LOCATION.normal,
-            srcData: geometry.normal,
-            size: 3,
-          },
-          {
-            // per-instance (одно значение на здание): divisor: 1. Два плотных массива => stride 0
-            location: BUILDING_ATTRIBUTES_LOCATION.translation,
-            srcData: instanceData.translations,
-            size: 3,
-            divisor: 1,
-          },
-          {
-            location: BUILDING_ATTRIBUTES_LOCATION.scale,
-            srcData: instanceData.scales,
-            size: 3,
-            divisor: 1,
+            geometry: roadGeometry,
+            color: roadColor,
           },
         ],
-        indices: {
-          srcData: geometry.indices,
-        },
       });
-
-      context.useProgram(program); // до кэширования/установки uniform
-      const material = createBuildingMaterial({
-        gl: context,
-        program,
-      });
-
-      prepared = { program, vao, material };
 
       destroyRef.onDestroy(() => {
-        buffers.forEach((buffer) => context.deleteBuffer(buffer));
-        if (indexBuffer) context.deleteBuffer(indexBuffer);
-        context.deleteVertexArray(vao);
-        context.deleteProgram(program);
+        buildings?.dispose();
+        surface?.dispose();
       });
 
-      render(); // первый кадр сразу, без ожидания ресайза
+      render(); // первый кадр сразу
     },
   });
 
+  // Реактивно: перерисовка при изменении размера, вращении, направления света
   afterRenderEffect({
     write: () => render(),
   });
 
   function render() {
-    if (!gl || !prepared) return;
+    if (!gl || !buildings || !surface) return;
 
     const { width, height } = size();
     const canvas = canvasRef().nativeElement;
@@ -139,21 +106,11 @@ export function injectCityRender({
     gl.viewport(0, 0, width, height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.useProgram(prepared.program);
-    gl.bindVertexArray(prepared.vao);
+    const camera = viewProjection();
+    const light = lightDirection();
 
-    prepared.material.updatePerFrame({
-      // читает viewMatrix() => реакция на вращение камеры
-      viewProjection: viewProjection(),
-      // читает сигнал солнца => реакция на смену направления
-      lightDirection: lightDirection(),
-    });
-
-    // Один вызов на весь город: 36 индексов куба * instanceData.count зданий
-    gl.drawElementsInstanced(gl.TRIANGLES, geometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
-
-    // Чтобы посторонние данные не попали в vao
-    gl.bindVertexArray(null);
+    buildings.draw({ viewProjection: camera, lightDirection: light });
+    surface.draw({ viewProjection: camera });
   }
 
   return { lightDirection };

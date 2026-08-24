@@ -1,11 +1,18 @@
-export function constructPlaneGeometry() {
-  // квадрат 10*10 в плоскости XZ (горизонтальный пол), центр в (0,0,0)
-  const half = 5;
+interface ConstructPlaneGeometry {
+  width?: number;
+  depth?: number;
+}
+
+// Горизонтальный квадрат в плоскости XZ (пол), центр в (0,0,0), нормаль вверх.
+export function constructPlaneGeometry({ width = 1, depth = 1 }: ConstructPlaneGeometry) {
+  const halfWidth = width / 2;
+  const halfDepth = depth / 2;
+
   const points = [
-    { coord: { x: -half, y: 0, z: -half } }, // 0 дальний-левый
-    { coord: { x: -half, y: 0, z: half } }, // 1 ближний-левый
-    { coord: { x: half, y: 0, z: half } }, // 2 ближний-правый
-    { coord: { x: half, y: 0, z: -half } }, // 3 дальний-правый
+    { coord: { x: -halfWidth, y: 0, z: -halfDepth } }, // 0 дальний-левый
+    { coord: { x: -halfWidth, y: 0, z: halfDepth } }, // 1 ближний-левый
+    { coord: { x: halfWidth, y: 0, z: halfDepth } }, // 2 ближний-правый
+    { coord: { x: halfWidth, y: 0, z: -halfDepth } }, // 3 дальний-правый
   ];
 
   const position = new Float32Array(points.flatMap(({ coord: { x, y, z } }) => [x, y, z]));
