@@ -18,6 +18,11 @@ export interface VaoAttribute {
   offset?: GLintptr;
   // Подсказка о том, как программа собирается использовать данные в буферном объекте
   usage?: GLenum;
+  // Частота перехода к следующему значению атрибута (для экземпляра):
+  //  а) undefined - обычный per-vertex атрибут (шаг каждую вершину
+  //  б) 1 - per-instance атрибут (одно значение на экземпляр, drawElementsInstanced)
+  //  в) n - одно значение на каждые N экземпляров
+  divisor?: number;
 }
 
 interface CreateVAO {
@@ -50,6 +55,7 @@ export function createVAO({ gl, attributes, indices }: CreateVAO) {
       stride = 0,
       offset = 0,
       usage = gl.STATIC_DRAW,
+      divisor,
     }) => {
       /**
        * Создаёт буферный объект
@@ -109,6 +115,10 @@ export function createVAO({ gl, attributes, indices }: CreateVAO) {
        * location - Определяет переменную-атрибут.
        * */
       gl.enableVertexAttribArray(location); // 5. Разрешить присваивание переменной a_Position
+
+      if (divisor !== undefined) {
+        gl.vertexAttribDivisor(location, divisor); // 6. Частота перехода к следующему значению атрибута
+      }
 
       return buffer;
     },

@@ -28,7 +28,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.css"]
+            "styles": ["src/styles.css"],
+            "loader": {
+              ".vert": "text",
+              ".frag": "text"
+            }
           },
           "configurations": {
             "production": {
