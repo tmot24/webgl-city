@@ -9,7 +9,7 @@ export interface AttributeSpec {
 
 export type MaterialUpdatePerFrame = (params: { modelMatrix: mat4; viewProjection: mat4 }) => void;
 
-export interface Material {
+export interface MaterialType {
   vertex: string;
   fragment: string;
   attributes: AttributeSpec[]; // что материал читает из геометрии

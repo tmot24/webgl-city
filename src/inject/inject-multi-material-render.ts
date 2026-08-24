@@ -1,4 +1,4 @@
-import { Material, MaterialUpdatePerFrame } from '../helper/material/material';
+import { MaterialType, MaterialUpdatePerFrame } from '../helper/material/material.type';
 import { mat4 } from 'gl-matrix';
 import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
 import { ConstructCubeGeometry } from '../helper/geometry/construct-cube-geometry';
@@ -8,7 +8,7 @@ import { createDrawable } from '../helper/material/create-drawable';
 
 // Один объект сцены: материал + функция, дающая его матрицу на текущий кадр
 interface SceneObject {
-  material: Material;
+  material: MaterialType;
   modelMatrix?: () => mat4; // может читать сигналы (угол, позиция) => реактивно
 }
 
