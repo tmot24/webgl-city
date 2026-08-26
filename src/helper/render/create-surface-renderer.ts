@@ -51,7 +51,6 @@ export function createSurfaceRenderer({
     for (const item of items) {
       gl.bindVertexArray(item.vao);
       material.updatePerFrame({ viewProjection, color: item.color });
-      // TODO: почему ты не стал делать через drawElementsInstanced?
       gl.drawElements(gl.TRIANGLES, item.count, gl.UNSIGNED_SHORT, 0);
     }
     gl.bindVertexArray(null);

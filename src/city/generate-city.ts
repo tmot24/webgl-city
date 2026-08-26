@@ -58,7 +58,7 @@ export function generateCity({
 
   // Дороги: gridBlocks + 1 линий на ось, центр каждой - посередине дорожной полосы.
   const lines: number[] = [];
-  for (let i = 0; i < gridBlocks; i++) {
+  for (let i = 0; i <= gridBlocks; i++) {
     lines.push(origin + roadWidth / 2 + i * (blockSize + roadWidth));
   }
 

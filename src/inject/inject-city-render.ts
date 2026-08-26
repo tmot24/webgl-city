@@ -1,13 +1,4 @@
-import {
-  afterNextRender,
-  afterRenderEffect,
-  DestroyRef,
-  ElementRef,
-  inject,
-  signal,
-  Signal,
-  WritableSignal,
-} from '@angular/core';
+import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
 import { InstanceData } from '../city/build-instance-data';
 import { vec3 } from 'gl-matrix';
 import { injectCanvasSize } from './inject-canvas-size';
@@ -29,7 +20,7 @@ interface InjectCityRender {
     roadColor: vec3;
   };
   // направление НА свет (нормализованное)
-  lightDirection?: WritableSignal<vec3>;
+  lightDirection: Signal<vec3>;
 }
 
 export function injectCityRender({
@@ -38,7 +29,7 @@ export function injectCityRender({
   ground: { groundGeometry, groundColor },
   road: { roadGeometry, roadColor },
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
-  lightDirection = signal(vec3.normalize(vec3.create(), vec3.fromValues(0.6, 1.0, 0.4))),
+  lightDirection,
 }: InjectCityRender) {
   const size = injectCanvasSize({ canvasRef });
   const destroyRef = inject(DestroyRef);

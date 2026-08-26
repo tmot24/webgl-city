@@ -11,7 +11,6 @@ export interface Rng {
   chance: (probability: number) => boolean;
 }
 
-// TODO: уточнить, почему нельзя было сделать проще через Math.random? Я не привык к побитовым операциям
 export function createRng({ seed }: { seed: number }): Rng {
   // Числа в js - это 64-битные float
   // >>> - это беззнаковый сдвиг вправо на n bit
