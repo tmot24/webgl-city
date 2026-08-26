@@ -20,6 +20,8 @@ interface InjectOrbitCamera {
   // Пределы радиуса (как близко/далеко можно подлететь), метры
   minRadius?: number;
   maxRadius?: number;
+  // Чувствительность пана в метрах на пиксель при радиусе = 1 (итог масштабируется радиусом)
+  panSpeed?: number;
 }
 
 /**
@@ -29,7 +31,6 @@ interface InjectOrbitCamera {
  * Полярный угол — угол «от северного полюса вниз». 0 = смотрим сверху, π/2 (90°) = смотрим сбоку с экватора, π = снизу.
  *  Это наклон вверх-вниз. Его ограничиваем, чтобы не перелететь через полюс (там камера переворачивается).
  * */
-
 export function injectOrbitCamera({
   canvasRef,
   initialEye,
@@ -41,9 +42,9 @@ export function injectOrbitCamera({
   zoomSpeed = 0.001, // изменение колеса (delta ~100) = 10% радиуса
   minRadius = 80, // ближе - уже среди зданий
   maxRadius = 4500, // дальше держим в пределах far (6000) камеры сцены
+  panSpeed = 0.0007, // ~1:1 "захват" земли при обзоре ~800px / FOV 30; подстраивается
 }: InjectOrbitCamera) {
   const destroyRef = inject(DestroyRef);
-
   /**
    * Начальные углы вычисляем ОДИН раз из стартовой позиции камеры
    * Радиус = расстояние от центра до камеры (длина вектора initialEye)
@@ -66,31 +67,59 @@ export function injectOrbitCamera({
   const azimuth = signal(initialAzimuth);
   // Ограничен пределами, чтобы не перевернуться
   const polar = signal(initialPolar);
+  // Центр орбиты - сигнал: его двигает пан. Копируем, чтобы не мутировать аргумент.
+  const centerPoint = signal(vec3.clone(center));
+
   /**
-   * Позиция камеры = перевод (radius, polar, azimuth) обратно в x/y/z.
-   * Это сферические координаты. Разбор по осям:
+   * Позиция камеры = центр + сферическое смещение (radius, polar, azimuth).
+   * При пане камера едет вместе с точкой, вокруг которой вращается.
    * */
   const eyePoint = computed(() => {
+    const c = centerPoint();
     const r = radius();
     const p = polar();
     const a = azimuth();
     // sin(polar) - "насколько далеко от вертикальной оси" (радиус горизонтального круга на этой высоте).
     // На полюсе (polar=0) sin=0 → камера строго над центром; на экваторе sin=1 → максимально сбоку.
     const horizontal = r * Math.sin(p);
-    return vec3.fromValues(
+    const offset = vec3.fromValues(
       horizontal * Math.sin(a), // x: горизонтальный радиус * sin(азимут)
       r * Math.cos(p), // y: высота - только от наклона (cos: 1 сверху, 0 на экваторе, -1 снизу)
       horizontal * Math.cos(a), // z: горизонтальный радиус * cos(азимут)
     );
+    return vec3.add(vec3.create(), c, offset);
   });
 
   /**
    * Матрица вида - тоже производная: lookAt из позиции камеры в центр.
    * computed → пересчитывается сам, когда меняются углы.
    * */
-  const viewMatrix = computed(() => mat4.lookAt(mat4.create(), eyePoint(), center, up));
+  const viewMatrix = computed(() => mat4.lookAt(mat4.create(), eyePoint(), centerPoint(), up));
+
+  // Пробел зажат? Тогда ЛКМ-drag - это пан (как в Фигме)
+  let isSpaceHeld = false;
 
   const mouseMoveHandler = (event: MouseEvent) => {
+    // Пан: пробел + ЛКМ (бит 1 в маске buttons).
+    if (isSpaceHeld && (event.buttons & 1) === 1) {
+      const a = azimuth();
+      // Оси экрана, спроецированные на землю (из азимута):
+      // rightGround - "вправо по экрану"
+      const rightGround = { x: Math.cos(a), z: -Math.sin(a) };
+      // forwardGround - "в глубину экрана"
+      const forwardGround = { x: -Math.sin(a), z: -Math.cos(a) };
+      // Масштаб пана растёт с радиусом => на любом зуме тащишь землю с одинаковым "сцеплением"
+      const scale = radius() * panSpeed;
+
+      // "Захват": тянешь мышь вправо => земля вправо => центр влево (обратный знак), аналогично вниз
+      const dx = (-rightGround.x * event.movementX + forwardGround.x * event.movementY) * scale;
+      const dz = (-rightGround.z * event.movementX + forwardGround.z * event.movementY) * scale;
+
+      canvasRef().nativeElement.style.cursor = 'grabbing';
+      centerPoint.update((c) => vec3.fromValues(c[0] + dx, c[1], c[2] + dz));
+      return;
+    }
+
     // Вращаем только при зажатой ПКМ (бит 2 в маске buttons)
     if ((event.buttons & 2) !== 2) return;
 
@@ -122,6 +151,25 @@ export function injectOrbitCamera({
     radius.update((r) => Math.min(maxRadius, Math.max(minRadius, r * factor)));
   };
 
+  const isEditableTarget = (target: EventTarget | null) => {
+    const el = target as HTMLElement | null;
+    return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+  };
+
+  const keyDownHandler = (event: KeyboardEvent) => {
+    // Не перехватываем пробел, если печатают в поле ввода.
+    if (event.code !== 'Space' || isEditableTarget(event.target)) return;
+    event.preventDefault(); // пробел иначе скролит страницу
+    isSpaceHeld = true;
+    canvasRef().nativeElement.style.cursor = 'grab';
+  };
+
+  const keyUpHandler = (event: KeyboardEvent) => {
+    if (event.code !== 'Space') return;
+    isSpaceHeld = false;
+    canvasRef().nativeElement.style.cursor = '';
+  };
+
   // Один раз. Слушатели вешаем только после того, как view гарантированно инициализирован
   // и canvasRef() можно безопасно резолвить
   afterNextRender({
@@ -131,11 +179,16 @@ export function injectOrbitCamera({
       canvasElement.addEventListener('contextmenu', contextMenuHandler);
       // passive: false - обязательно, иначе preventDefault на wheel игнорируется, и страница скролиться
       canvasElement.addEventListener('wheel', wheelHandler, { passive: false });
+      // Пробел ловим на window: клавиатурный фокус может быть не на canvas
+      window.addEventListener('keydown', keyDownHandler);
+      window.addEventListener('keyup', keyUpHandler);
 
       destroyRef.onDestroy(() => {
         canvasElement.removeEventListener('mousemove', mouseMoveHandler);
         canvasElement.removeEventListener('contextmenu', contextMenuHandler);
         canvasElement.removeEventListener('wheel', wheelHandler);
+        window.removeEventListener('keydown', keyDownHandler);
+        window.removeEventListener('keyup', keyUpHandler);
       });
     },
   });

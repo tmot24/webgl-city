@@ -3,7 +3,7 @@ import { createRng } from '../helper/geometry/create-rng';
 
 export function generateCity({
   seed = 1,
-  gridBlocks = 24,
+  gridBlocks = 48,
   blockSize = 50,
   roadWidth = 10,
   plotsPerAxis = 2,

@@ -40,7 +40,7 @@ export function injectCityRender({
     initialEye: vec3.fromValues(1500, 1800, 1500),
   });
   // near/far под масштаб города: ближайшее здание дальше ~1700 м, поэтому near можно поднять - меньше z-fighting
-  const viewProjection = createViewProjectionMatrix({ canvasRef, viewMatrix, near: 10, far: 6000 });
+  const viewProjection = createViewProjectionMatrix({ canvasRef, viewMatrix, near: 10, far: 10000 });
 
   let gl: WebGL2RenderingContext | null = null;
   let buildings: BuildingRenderer | null = null;
