@@ -1,5 +1,7 @@
 import { afterNextRender, computed, DestroyRef, ElementRef, inject, signal, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
+import { panHandler } from './helper/panHandler';
+import { rotateHandler } from './helper/rotateHandler';
 
 interface InjectOrbitCamera {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -102,39 +104,14 @@ export function injectOrbitCamera({
   const mouseMoveHandler = (event: MouseEvent) => {
     // Пан: пробел + ЛКМ (бит 1 в маске buttons).
     if (isSpaceHeld && (event.buttons & 1) === 1) {
-      const a = azimuth();
-      // Оси экрана, спроецированные на землю (из азимута):
-      // rightGround - "вправо по экрану"
-      const rightGround = { x: Math.cos(a), z: -Math.sin(a) };
-      // forwardGround - "в глубину экрана"
-      const forwardGround = { x: -Math.sin(a), z: -Math.cos(a) };
-      // Масштаб пана растёт с радиусом => на любом зуме тащишь землю с одинаковым "сцеплением"
-      const scale = radius() * panSpeed;
-
-      // "Захват": тянешь мышь вправо => земля вправо => центр влево (обратный знак), аналогично вниз
-      const dx = (-rightGround.x * event.movementX + forwardGround.x * event.movementY) * scale;
-      const dz = (-rightGround.z * event.movementX + forwardGround.z * event.movementY) * scale;
-
-      canvasRef().nativeElement.style.cursor = 'grabbing';
-      centerPoint.update((c) => vec3.fromValues(c[0] + dx, c[1], c[2] + dz));
+      panHandler({ event, azimuth, radius, panSpeed, centerPoint, canvasRef });
       return;
     }
 
     // Вращаем только при зажатой ПКМ (бит 2 в маске buttons)
     if ((event.buttons & 2) !== 2) return;
 
-    // movementX/Y - это СМЕЩЕНИЕ мыши с прошлого события (дельта), а не позиция.
-    // Именно дельта позволяет крутить бесконечно: тянешь дальше - угол растёт без предела.
-    const deltaAzimuth = event.movementX * rotateSpeed;
-    const deltaPolar = event.movementY * rotateSpeed;
-
-    // Азимут просто накапливаем предел не нужен, 360° и дальше по кругу.
-    // Знак минус: тянешь мышл вправо → сцена поворачивается влево (привычно для orbit).
-    azimuth.update((a) => a - deltaAzimuth);
-
-    // Полярный угол накапливаем, но зажимаем в [minPolar, maxPolar],
-    // чтобы камера не перелетела через полюс и не перевернулась. Тоже минус.
-    polar.update((p) => Math.min(maxPolar, Math.max(minPolar, p - deltaPolar)));
+    rotateHandler({ event, azimuth, polar, rotateSpeed, minPolar, maxPolar });
   };
 
   const contextMenuHandler = (event: MouseEvent) => {
@@ -160,15 +137,27 @@ export function injectOrbitCamera({
     // Не перехватываем пробел, если печатают в поле ввода.
     if (event.code !== 'Space' || isEditableTarget(event.target)) return;
     event.preventDefault(); // пробел иначе скролит страницу
+    // Авто-повтор keydown при удержании: состояние уже выставлено, выходим.
+    // Иначе повтор ставил бы курсор 'grab' поверх 'grabbing' от пана - курсор мигал бы
+    if (event.repeat) return;
     isSpaceHeld = true;
     canvasRef().nativeElement.style.cursor = 'grab';
   };
 
-  const keyUpHandler = (event: KeyboardEvent) => {
-    if (event.code !== 'Space') return;
+  // Сброс режима пана
+  const releaseSpace = () => {
     isSpaceHeld = false;
     canvasRef().nativeElement.style.cursor = '';
   };
+
+  const keyUpHandler = (event: KeyboardEvent) => {
+    if (event.code !== 'Space') return;
+    releaseSpace();
+  };
+
+  // Ушли с окна (клик по другой вкладке) - keyup пробела может не прийти.
+  // Сбрасываем режим пана, иначе isSpaceHeld залипнет в true
+  const blurHandler = () => releaseSpace();
 
   // Один раз. Слушатели вешаем только после того, как view гарантированно инициализирован
   // и canvasRef() можно безопасно резолвить
@@ -182,6 +171,7 @@ export function injectOrbitCamera({
       // Пробел ловим на window: клавиатурный фокус может быть не на canvas
       window.addEventListener('keydown', keyDownHandler);
       window.addEventListener('keyup', keyUpHandler);
+      window.addEventListener('blur', blurHandler);
 
       destroyRef.onDestroy(() => {
         canvasElement.removeEventListener('mousemove', mouseMoveHandler);
@@ -189,6 +179,7 @@ export function injectOrbitCamera({
         canvasElement.removeEventListener('wheel', wheelHandler);
         window.removeEventListener('keydown', keyDownHandler);
         window.removeEventListener('keyup', keyUpHandler);
+        window.removeEventListener('blur', blurHandler);
       });
     },
   });
