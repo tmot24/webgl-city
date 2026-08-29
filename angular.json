@@ -31,7 +31,8 @@
             "styles": ["src/styles.css"],
             "loader": {
               ".vert": "text",
-              ".frag": "text"
+              ".frag": "text",
+              ".glsl": "text"
             }
           },
           "configurations": {

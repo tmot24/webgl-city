@@ -1,12 +1,12 @@
 import { createShader } from './create-shader';
 
-interface CreateProgram {
+interface CreateGLProgram {
   gl: WebGL2RenderingContext;
   vertex: string;
   fragment: string;
 }
 
-export function createProgram({ gl, vertex, fragment }: CreateProgram) {
+export function createGLProgram({ gl, vertex, fragment }: CreateGLProgram) {
   const vertexShader = createShader({ gl, type: gl.VERTEX_SHADER, source: vertex });
   const fragmentShader = createShader({ gl, type: gl.FRAGMENT_SHADER, source: fragment });
 

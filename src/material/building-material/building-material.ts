@@ -11,6 +11,8 @@ export interface BuildFrame {
   viewProjection: mat4;
   // направление НА свет, нормализованное (реактивное "солнце")
   lightDirection: vec3;
+  // "взгляд из солнца" для выборки тени
+  lightViewProjection: mat4;
 }
 
 export interface BuildingMaterial {
@@ -27,13 +29,21 @@ export function createBuildingMaterial({
 }): BuildingMaterial {
   const u_ViewProjection = gl.getUniformLocation(program, 'u_ViewProjection');
   const u_LightDirection = gl.getUniformLocation(program, 'u_LightDirection');
+  const u_LightViewProjection = gl.getUniformLocation(program, 'u_LightViewProjection');
+  const u_ShadowMap = gl.getUniformLocation(program, 'u_ShadowMap');
   if (!u_ViewProjection) throw new Error('uniform u_ViewProjection не найден');
   if (!u_LightDirection) throw new Error('uniform u_LightDirection не найден');
+  if (!u_LightViewProjection) throw new Error('uniform u_LightViewProjection не найден');
+  if (!u_ShadowMap) throw new Error('uniform u_ShadowMap не найден');
+
+  // Карта теней лежит на текстурном юните 0 (программа активна на момент вызова)
+  gl.uniform1i(u_ShadowMap, 0);
 
   return {
-    updatePerFrame: ({ viewProjection, lightDirection }) => {
+    updatePerFrame: ({ viewProjection, lightDirection, lightViewProjection }) => {
       gl.uniformMatrix4fv(u_ViewProjection, false, viewProjection);
       gl.uniform3fv(u_LightDirection, lightDirection);
+      gl.uniformMatrix4fv(u_LightViewProjection, false, lightViewProjection);
     },
   };
 }

@@ -1,9 +1,13 @@
 #version 300 es
 precision highp float;
 
+//#include shadow-lit
+
 in vec3 v_Normal;
+in vec4 v_LightSpacePosition; // позиция фрагмента в клип-пространстве света
 
 uniform vec3 u_LightDirection; // направление НА свет (нормализованное), в мировых координатах
+//uniform sampler2D u_ShadowMap; // карта теней: глубина из «взгляда солнца»
 
 out vec4 outColor;
 
@@ -21,6 +25,9 @@ void main() {
   // dot() — это как "похожесть" двух направлений.
   // Если векторы смотрят в одну сторону => результат большой (положительный).
   // Если в разные → отрицательный. Если перпендикулярны → ноль.
+
+  // Тень гасит именно солнечный (диффузный) член; AMBIENT остаётся полом.
+  diffuse *= shadowLit(v_LightSpacePosition);
 
   float light = AMBIENT + (1.0 - AMBIENT) * diffuse;
   outColor = vec4(BUILDING_COLOR * light, 1.0);

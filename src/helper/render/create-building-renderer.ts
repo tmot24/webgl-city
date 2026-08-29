@@ -1,7 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { InstanceData } from '../../city/build-instance-data';
 import { constructCubeGeometry } from '../geometry/construct-cube-geometry';
-import { createProgram } from '../core/create-program';
+import { createGLProgram } from '../core/create-gl-program';
 import vertex from '../../material/building-material/building-material.vert';
 import fragment from '../../material/building-material/building-material.frag';
 import { createVAO } from '../mesh/create-vao';
@@ -9,9 +9,11 @@ import {
   BUILDING_ATTRIBUTES_LOCATION,
   createBuildingMaterial,
 } from '../../material/building-material/building-material';
+import { resolveShaderIncludes } from '../core/resolve-shader-includes';
+import { SHADER_CHUNKS } from '../../material/helper/shader-chunks';
 
 export interface BuildingRenderer {
-  draw: (frame: { viewProjection: mat4; lightDirection: vec3 }) => void;
+  draw: (frame: { viewProjection: mat4; lightDirection: vec3; lightViewProjection: mat4 }) => void;
   dispose: () => void;
 }
 
@@ -24,7 +26,11 @@ export function createBuildingRenderer({
   instanceData: InstanceData;
 }): BuildingRenderer {
   const geometry = constructCubeGeometry();
-  const program = createProgram({ gl, vertex, fragment });
+  const program = createGLProgram({
+    gl,
+    vertex,
+    fragment: resolveShaderIncludes({ source: fragment, chunks: SHADER_CHUNKS }),
+  });
 
   const { vao, buffers, indexBuffer } = createVAO({
     gl,
@@ -62,10 +68,10 @@ export function createBuildingRenderer({
   gl.useProgram(program);
   const material = createBuildingMaterial({ gl, program });
 
-  const draw = ({ viewProjection, lightDirection }: { viewProjection: mat4; lightDirection: vec3 }) => {
+  const draw: BuildingRenderer['draw'] = ({ viewProjection, lightDirection, lightViewProjection }) => {
     gl.useProgram(program);
     gl.bindVertexArray(vao);
-    material.updatePerFrame({ viewProjection, lightDirection });
+    material.updatePerFrame({ viewProjection, lightDirection, lightViewProjection });
     // Один вызов на весь город: 36 индексов куба * instanceData.count зданий
     gl.drawElementsInstanced(gl.TRIANGLES, geometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
     gl.bindVertexArray(null);

@@ -3,7 +3,7 @@ import { mat4 } from 'gl-matrix';
 import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
 import { ConstructCubeGeometry } from '../helper/geometry/construct-cube-geometry';
 import { injectCanvasSize } from './inject-canvas-size';
-import { createProgram } from '../helper/core/create-program';
+import { createGLProgram } from '../helper/core/create-gl-program';
 import { createDrawable } from '../helper/material/create-drawable';
 
 // Один объект сцены: материал + функция, дающая его матрицу на текущий кадр
@@ -50,7 +50,7 @@ export function injectMultiMaterialRender({ canvasRef, geometry, objects, viewPr
 
       prepared = objects.map(({ material, modelMatrix }) => {
         // своя программа под шейдеры материала
-        const program = createProgram({
+        const program = createGLProgram({
           gl: context,
           vertex: material.vertex,
           fragment: material.fragment,

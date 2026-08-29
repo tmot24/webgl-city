@@ -34,10 +34,16 @@ export class Scene {
       bounds,
     });
 
+    // Радиус охватывающей сферы города (от центра-начала координат до дальнего верхнего угла):
+    // задаёт размер ортобокса карты теней
+    const maxHeight = city.buildings.reduce((max, { height }) => Math.max(max, height), 0);
+    const sceneRadius = Math.hypot(bounds.maxX, maxHeight, bounds.maxZ);
+
     injectCityRender({
       canvasRef: this.canvasRef,
       lightDirection: this.lightDirection,
       instanceData,
+      sceneRadius,
       ground: {
         groundGeometry,
         groundColor: vec3.fromValues(0.36, 0.55, 0.32),

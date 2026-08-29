@@ -7,6 +7,8 @@ import { createViewProjectionMatrix } from '../helper/matrix/create-view-project
 import { BuildingRenderer, createBuildingRenderer } from '../helper/render/create-building-renderer';
 import { createSurfaceRenderer, SurfaceRenderer } from '../helper/render/create-surface-renderer';
 import { FlatGeometry } from '../road/build-road-geometry';
+import { createShadowRender, ShadowRender } from '../helper/render/create-shadow-render';
+import { createLightViewProjection } from '../helper/matrix/create-light-view-projection';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -21,7 +23,12 @@ interface InjectCityRender {
   };
   // направление НА свет (нормализованное)
   lightDirection: Signal<vec3>;
+  // радиус охватывающий сферы города - под ортобокс карты теней
+  sceneRadius: number;
 }
+
+// Город центрирован в начале координат - центр сцены для "взгляда солнца"
+const SCENE_CENTER = vec3.create();
 
 export function injectCityRender({
   canvasRef,
@@ -30,6 +37,7 @@ export function injectCityRender({
   road: { roadGeometry, roadColor },
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
   lightDirection,
+  sceneRadius,
 }: InjectCityRender) {
   const size = injectCanvasSize({ canvasRef });
   const destroyRef = inject(DestroyRef);
@@ -45,8 +53,9 @@ export function injectCityRender({
   let gl: WebGL2RenderingContext | null = null;
   let buildings: BuildingRenderer | null = null;
   let surface: SurfaceRenderer | null = null;
+  let shadow: ShadowRender | null = null;
 
-  // ОДИН РАЗ: контекст, программа, VAO (куб + экземпляр-атрибуты), материал
+  // ОДИН РАЗ: контекст, программа, рендеры (здания, поверхности) и depth-проход теней
   afterNextRender({
     write: () => {
       const context = canvasRef().nativeElement.getContext('webgl2');
@@ -70,10 +79,12 @@ export function injectCityRender({
           },
         ],
       });
+      shadow = createShadowRender({ gl, instanceData, destroyRef });
 
       destroyRef.onDestroy(() => {
         buildings?.dispose();
         surface?.dispose();
+        shadow?.dispose();
       });
 
       render(); // первый кадр сразу
@@ -86,7 +97,7 @@ export function injectCityRender({
   });
 
   function render() {
-    if (!gl || !buildings || !surface) return;
+    if (!gl || !buildings || !surface || !shadow) return;
 
     const { width, height } = size();
     const canvas = canvasRef().nativeElement;
@@ -99,9 +110,24 @@ export function injectCityRender({
 
     const camera = viewProjection();
     const light = lightDirection();
+    // "Взгляд из солнца" - пересчитывается, когда меняется направление света
+    const lightViewProjection = createLightViewProjection({
+      lightDirection: light,
+      center: SCENE_CENTER,
+      radius: sceneRadius,
+    });
 
-    buildings.draw({ viewProjection: camera, lightDirection: light });
-    surface.draw({ viewProjection: camera });
+    // ПРОХОД 1: глубина города в карту теней (свой viewport и framebuffer внутри)
+    shadow.renderDepth({ lightViewProjection });
+
+    // ПРОХОД 2: сцена на экран. Карту теней кладём на текстурный юнит 0 - материалы её не семплят
+    gl.viewport(0, 0, width, height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, shadow.depthTexture);
+
+    surface.draw({ viewProjection: camera, lightViewProjection }); // трава + дороги принимаю тень
+    buildings.draw({ viewProjection: camera, lightDirection: light, lightViewProjection });
   }
 
   return { lightDirection };

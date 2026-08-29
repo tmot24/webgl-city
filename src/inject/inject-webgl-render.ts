@@ -1,6 +1,6 @@
 import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
 import { injectCanvasSize } from './inject-canvas-size';
-import { createProgram } from '../helper/core/create-program';
+import { createGLProgram } from '../helper/core/create-gl-program';
 import { runAnimationFrame } from '../helper/core/run-animation-frame';
 
 interface InjectWebglRender<TSetup> {
@@ -73,7 +73,7 @@ export function injectWebGLRender<TSetup = Record<string, never>>({
       if (!context) throw new Error('WebGL2 не поддерживается');
       gl = context;
 
-      const prog = createProgram({ gl, vertex, fragment });
+      const prog = createGLProgram({ gl, vertex, fragment });
       if (!prog) throw new Error('Не удалось создать программу');
       program = prog;
       gl.useProgram(program);
