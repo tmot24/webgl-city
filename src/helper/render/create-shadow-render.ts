@@ -14,6 +14,7 @@ export interface ShadowRender {
   // Карта теней (depth-текстура)
   depthTexture: WebGLTexture;
   // Размер карты в текселях (пригодится для 1/size при мягких тенях)
+  // Если края квадратные, то надо повышать разрешение степени 2
   size: number;
   // Рендер глубины города из точки зрения солнца в карту теней
   renderDepth: (frame: { lightViewProjection: mat4 }) => void;
@@ -29,12 +30,12 @@ export function createShadowRender({
   gl,
   instanceData,
   destroyRef,
-  size = 2048,
+  size,
 }: {
   gl: WebGL2RenderingContext;
   instanceData: InstanceData;
   destroyRef: DestroyRef;
-  size?: number;
+  size: number;
 }): ShadowRender {
   const geometry = constructCubeGeometry();
   const program = createGLProgram({
@@ -88,12 +89,21 @@ export function createShadowRender({
     gl.viewport(0, 0, size, size);
     gl.clear(gl.DEPTH_BUFFER_BIT); // цвета нет - чистим только глубину
 
+    // В карту теней пишем только ЗАДНИЕ грани домов: тогда лицевые/боковые грани
+    // самого дома всегда ближе сохранённой глубины и не затеняют сами себя
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.FRONT);
+
     gl.useProgram(program);
     gl.bindVertexArray(vao);
     material.updatePerFrame({ lightViewProjection });
     // Один вызов на весь город - как и в основном проходе
     gl.drawElementsInstanced(gl.TRIANGLES, geometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
     gl.bindVertexArray(null);
+
+    // Возвращаю состояние: основной проход рисует без отсечения
+    gl.cullFace(gl.BACK);
+    gl.disable(gl.CULL_FACE);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); // вернуть рендер на экран
   };

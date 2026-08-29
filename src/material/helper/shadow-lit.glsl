@@ -8,7 +8,7 @@ float shadowLit(sampler2D shadowMap, vec4 lightSpacePosition) {
   if (proj.z > 1.0) return 1.0;
   if (proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0) return 1.0;
 
-  float bias = 0.003; // ~3 м в мире; больше — «отрыв» тени, меньше — акне
+  float bias = 0.003  ; // ~3 м в мире; больше — «отрыв» тени, меньше — акне
   vec2 texel = 1.0 / vec2(textureSize(shadowMap, 0));
 
   float lit = 0.0;

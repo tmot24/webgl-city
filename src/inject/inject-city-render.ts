@@ -79,7 +79,7 @@ export function injectCityRender({
           },
         ],
       });
-      shadow = createShadowRender({ gl, instanceData, destroyRef });
+      shadow = createShadowRender({ gl, instanceData, destroyRef, size: 8192 });
 
       destroyRef.onDestroy(() => {
         buildings?.dispose();
