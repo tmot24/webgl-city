@@ -187,5 +187,7 @@ export function injectOrbitCamera({
   return {
     viewMatrix,
     eyePoint,
+    center: centerPoint,
+    distance: radius,
   };
 }

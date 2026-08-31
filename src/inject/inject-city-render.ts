@@ -27,8 +27,9 @@ interface InjectCityRender {
   sceneRadius: number;
 }
 
-// Город центрирован в начале координат - центр сцены для "взгляда солнца"
-const SCENE_CENTER = vec3.create();
+// Тень следует за каерой: охват = дистанция зума * фактор, зажатый в разумные пределы.
+const SHADOW_RADIUS_FACTOR = 1; // доля видимой области, попадающая в резкую тень
+const MIN_SHADOW_RADIUS = 150; // не мельче - иначе высокие дома у края теряют тень по верху
 
 export function injectCityRender({
   canvasRef,
@@ -43,7 +44,11 @@ export function injectCityRender({
   const destroyRef = inject(DestroyRef);
 
   // Камера под масштаб города (~1450 м): initialEye задаёт радиус (~2780 м) и 3/4-ракурс сверху
-  const { viewMatrix } = injectOrbitCamera({
+  const {
+    viewMatrix,
+    center: cameraCenter,
+    distance: cameraDistance,
+  } = injectOrbitCamera({
     canvasRef,
     initialEye: vec3.fromValues(1500, 1800, 1500),
   });
@@ -79,7 +84,7 @@ export function injectCityRender({
           },
         ],
       });
-      shadow = createShadowRender({ gl, instanceData, destroyRef, size: 8192 });
+      shadow = createShadowRender({ gl, instanceData, destroyRef, size: 4096 });
 
       destroyRef.onDestroy(() => {
         buildings?.dispose();
@@ -110,11 +115,12 @@ export function injectCityRender({
 
     const camera = viewProjection();
     const light = lightDirection();
-    // "Взгляд из солнца" - пересчитывается, когда меняется направление света
+    // Тень привязана к камере: центр - куда смотрим, охват по зуму (чем ближе, тем резче)
+    const shadowRadius = Math.min(sceneRadius, Math.max(MIN_SHADOW_RADIUS, cameraDistance() * SHADOW_RADIUS_FACTOR));
     const lightViewProjection = createLightViewProjection({
       lightDirection: light,
-      center: SCENE_CENTER,
-      radius: sceneRadius,
+      center: cameraCenter(),
+      radius: shadowRadius,
     });
 
     // ПРОХОД 1: глубина города в карту теней (свой viewport и framebuffer внутри)
