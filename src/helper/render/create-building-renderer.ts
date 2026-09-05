@@ -69,12 +69,16 @@ export function createBuildingRenderer({
   const material = createBuildingMaterial({ gl, program });
 
   const draw: BuildingRenderer['draw'] = ({ viewProjection, lightDirection, lightViewProjection }) => {
+    gl.enable(gl.CULL_FACE); // включить отсечение
+    gl.cullFace(gl.BACK); // отсекать ЗАДНИЕ грани (рисовать только передние)
+
     gl.useProgram(program);
     gl.bindVertexArray(vao);
     material.updatePerFrame({ viewProjection, lightDirection, lightViewProjection });
     // Один вызов на весь город: 36 индексов куба * instanceData.count зданий
     gl.drawElementsInstanced(gl.TRIANGLES, geometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
     gl.bindVertexArray(null);
+    gl.disable(gl.CULL_FACE); // вернул обратно
   };
 
   const dispose = () => {
