@@ -8,7 +8,7 @@ float shadowLit(sampler2D shadowMap, vec4 lightSpacePosition, float NdotL) {
   if (proj.z > 1.0) return 1.0;
   if (proj.x < 0.0 || proj.x > 1.0 || proj.y < 0.0 || proj.y > 1.0) return 1.0;
 
-  float bias = max(0.0004, 0.002 * (1.0 - NdotL)); // прямым к свету - почти ноль, скользящим - больше
+  float bias = max(0.0001, 0.002 * (1.0 - NdotL)); // прямым к свету - почти ноль, скользящим - больше
   vec2 texel = 1.0 / vec2(textureSize(shadowMap, 0));
 
   float lit = 0.0;
