@@ -11,6 +11,7 @@ uniform mat4 u_LightViewProjection; // «взгляд из солнца» — д
 
 out vec3 v_Normal;
 out vec4 v_LightSpacePosition; // позиция фрагмента в клип-пространстве света
+flat out int v_InstanceId; // номер инстанса (здания); flat - передача во фрагментый шейдер без интерполяции
 
 void main() {
   // Модельная трансформация без матрицы: сначала масштаб, затем перенос
@@ -22,6 +23,6 @@ void main() {
 
   // Та же мировая точка, но в пространстве света — во фрагменте сравним её глубину с картой теней.
   v_LightSpacePosition = u_LightViewProjection * vec4(worldPosition, 1.0);
-
+  v_InstanceId = gl_InstanceID;
   gl_Position = u_ViewProjection * vec4(worldPosition, 1.0);
 }

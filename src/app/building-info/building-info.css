@@ -1,0 +1,43 @@
+.build-panel__container {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font:
+    13px/1.35 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  pointer-events: none;
+  user-select: none;
+
+  .title {
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .hint {
+    opacity: 0.75;
+    font-style: italic;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 12px;
+    margin: 0;
+  }
+
+  dt {
+    opacity: 0.7;
+  }
+
+  dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}

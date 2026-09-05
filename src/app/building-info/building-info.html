@@ -1,0 +1,19 @@
+@if (info(); as build) {
+  <div class="build-panel__container">
+    <div class="title">Здание #{{ build.id }}</div>
+    <dl>
+      <dt>Высота</dt>
+      <dd>{{ build.height }}</dd>
+      <dt>Основание</dt>
+      <dd>{{ build.width }} × {{ build.depth }}</dd>
+      <dt>Площадь</dt>
+      <dd>{{ build.area }} м²</dd>
+      <dt>Этажей ≈</dt>
+      <dd>{{ build.floors }}</dd>
+      <dt>Позиция</dt>
+      <dd>X: {{ build.x }} Z: {{ build.z }}</dd>
+    </dl>
+  </div>
+} @else {
+  <div class="build-panel__container build-panel__container_hint">Выберите здание</div>
+}

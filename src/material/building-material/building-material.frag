@@ -5,15 +5,18 @@ precision highp float;
 
 in vec3 v_Normal;
 in vec4 v_LightSpacePosition; // позиция фрагмента в клип-пространстве света
+flat in int v_InstanceId;
 
 uniform vec3 u_LightDirection; // направление НА свет (нормализованное), в мировых координатах
 uniform sampler2D u_ShadowMap; // карта теней: глубина из «взгляда солнца»
+uniform int u_SelectedId; // выбранное здание; -1 = ничего не выбранно
 
 out vec4 outColor;
 
 const vec3 BUILDING_COLOR = vec3(0.85); // светло-серые здания
 const float AMBIENT = 0.25; // фоновая подсветка (нижний «пол» яркости)
 const float SHADOW_MIN = 0.6; // сколько солнечного света остаётся в падающей тени (0 - гасим полностью)
+const vec3 HIGHTLIGHT_COLOR = vec3(1.0, 0.85, 0.2); // тёплый акцент на выбранном
 
 void main() {
   vec3 normal = normalize(v_Normal);
@@ -36,5 +39,10 @@ void main() {
   diffuse *= mix(SHADOW_MIN, 1.0, lit);
 
   float light = AMBIENT + (1.0 - AMBIENT) * diffuse;
-  outColor = vec4(BUILDING_COLOR * light, 1.0);
+  vec3 base = BUILDING_COLOR;
+  // Выбранное здание тонируем, сохраняя объём (свет остаётся сверху)
+  if (v_InstanceId == u_SelectedId) {
+    base = mix(base, HIGHTLIGHT_COLOR, 0.6);
+  }
+  outColor = vec4(base * light, 1.0);
 }

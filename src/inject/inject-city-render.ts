@@ -9,6 +9,7 @@ import { createSurfaceRenderer, SurfaceRenderer } from '../helper/render/create-
 import { FlatGeometry } from '../road/build-road-geometry';
 import { createShadowRender, ShadowRender } from '../helper/render/create-shadow-render';
 import { createLightViewProjection } from '../helper/matrix/create-light-view-projection';
+import { Building } from '../city/generate-city.types';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -25,6 +26,7 @@ interface InjectCityRender {
   lightDirection: Signal<vec3>;
   // радиус охватывающий сферы города - под ортобокс карты теней (уже не надо, но пока оставлю, мало ли понадобиться)
   sceneRadius: number;
+  selectedBuilding: Signal<Building | null>;
 }
 
 // Тень следует за каерой: охват = дистанция зума * фактор, зажатый в разумные пределы.
@@ -38,7 +40,7 @@ export function injectCityRender({
   road: { roadGeometry, roadColor },
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
   lightDirection,
-  sceneRadius,
+  selectedBuilding,
 }: InjectCityRender) {
   const size = injectCanvasSize({ canvasRef });
   const castShadows = signal(true);
@@ -49,6 +51,7 @@ export function injectCityRender({
     viewMatrix,
     center: cameraCenter,
     distance: cameraDistance,
+    eyePoint,
   } = injectOrbitCamera({
     canvasRef,
     initialEye: vec3.fromValues(1500, 1800, 1500),
@@ -138,8 +141,13 @@ export function injectCityRender({
     gl.bindTexture(gl.TEXTURE_2D, shadow.depthTexture);
 
     surface.draw({ viewProjection: camera, lightViewProjection }); // трава + дороги принимаю тень
-    buildings.draw({ viewProjection: camera, lightDirection: light, lightViewProjection });
+    buildings.draw({
+      viewProjection: camera,
+      lightDirection: light,
+      lightViewProjection,
+      selectedId: selectedBuilding()?.id ?? -1,
+    });
   }
 
-  return { lightDirection, castShadows };
+  return { lightDirection, castShadows, viewProjection, eyePoint };
 }

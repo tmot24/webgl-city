@@ -4,6 +4,7 @@
     pointer-events отключены на слое целиком, а конкретные контролы вернут
     себе point-events: auto - тогда клики по "пустом" месту уходят в canvas.
 -->
-<div>
+<div class="scene__overlay">
+  <app-building-info [building]="selectedBuilding()" />
   <ng-content />
 </div>

@@ -13,7 +13,7 @@ import { resolveShaderIncludes } from '../core/resolve-shader-includes';
 import { SHADER_CHUNKS } from '../../material/helper/shader-chunks';
 
 export interface BuildingRenderer {
-  draw: (frame: { viewProjection: mat4; lightDirection: vec3; lightViewProjection: mat4 }) => void;
+  draw: (frame: { viewProjection: mat4; lightDirection: vec3; lightViewProjection: mat4; selectedId: number }) => void;
   dispose: () => void;
 }
 
@@ -68,13 +68,13 @@ export function createBuildingRenderer({
   gl.useProgram(program);
   const material = createBuildingMaterial({ gl, program });
 
-  const draw: BuildingRenderer['draw'] = ({ viewProjection, lightDirection, lightViewProjection }) => {
+  const draw: BuildingRenderer['draw'] = ({ viewProjection, lightDirection, lightViewProjection, selectedId }) => {
     gl.enable(gl.CULL_FACE); // включить отсечение
     gl.cullFace(gl.BACK); // отсекать ЗАДНИЕ грани (рисовать только передние)
 
     gl.useProgram(program);
     gl.bindVertexArray(vao);
-    material.updatePerFrame({ viewProjection, lightDirection, lightViewProjection });
+    material.updatePerFrame({ viewProjection, lightDirection, lightViewProjection, selectedId });
     // Один вызов на весь город: 36 индексов куба * instanceData.count зданий
     gl.drawElementsInstanced(gl.TRIANGLES, geometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
     gl.bindVertexArray(null);
