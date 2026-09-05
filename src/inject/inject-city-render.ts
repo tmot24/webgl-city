@@ -1,4 +1,4 @@
-import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
+import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, signal, Signal } from '@angular/core';
 import { InstanceData } from '../city/build-instance-data';
 import { vec3 } from 'gl-matrix';
 import { injectCanvasSize } from './inject-canvas-size';
@@ -23,7 +23,7 @@ interface InjectCityRender {
   };
   // направление НА свет (нормализованное)
   lightDirection: Signal<vec3>;
-  // радиус охватывающий сферы города - под ортобокс карты теней
+  // радиус охватывающий сферы города - под ортобокс карты теней (уже не надо, но пока оставлю, мало ли понадобиться)
   sceneRadius: number;
 }
 
@@ -41,6 +41,7 @@ export function injectCityRender({
   sceneRadius,
 }: InjectCityRender) {
   const size = injectCanvasSize({ canvasRef });
+  const castShadows = signal(true);
   const destroyRef = inject(DestroyRef);
 
   // Камера под масштаб города (~1450 м): initialEye задаёт радиус (~2780 м) и 3/4-ракурс сверху
@@ -116,15 +117,19 @@ export function injectCityRender({
     const camera = viewProjection();
     const light = lightDirection();
     // Тень привязана к камере: центр - куда смотрим, охват по зуму (чем ближе, тем резче)
-    const shadowRadius = Math.min(sceneRadius, Math.max(MIN_SHADOW_RADIUS, cameraDistance() * SHADOW_RADIUS_FACTOR));
+    const shadowRadius = Math.max(MIN_SHADOW_RADIUS, cameraDistance() * SHADOW_RADIUS_FACTOR);
     const lightViewProjection = createLightViewProjection({
       lightDirection: light,
       center: cameraCenter(),
       radius: shadowRadius,
     });
 
-    // ПРОХОД 1: глубина города в карту теней (свой viewport и framebuffer внутри)
-    shadow.renderDepth({ lightViewProjection });
+    if (castShadows()) {
+      // ПРОХОД 1: глубина города в карту теней (свой viewport и framebuffer внутри)
+      shadow.renderDepth({ lightViewProjection });
+    } else {
+      shadow.clear(); // пустая карта => сцена без теней
+    }
 
     // ПРОХОД 2: сцена на экран. Карту теней кладём на текстурный юнит 0 - материалы её не семплят
     gl.viewport(0, 0, width, height);
@@ -136,5 +141,5 @@ export function injectCityRender({
     buildings.draw({ viewProjection: camera, lightDirection: light, lightViewProjection });
   }
 
-  return { lightDirection };
+  return { lightDirection, castShadows };
 }

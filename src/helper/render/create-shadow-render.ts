@@ -18,6 +18,8 @@ export interface ShadowRender {
   size: number;
   // Рендер глубины города из точки зрения солнца в карту теней
   renderDepth: (frame: { lightViewProjection: mat4 }) => void;
+  // Очистить карту в 1.0 (пусто = ничего не затеняет) - для выключенных теней
+  clear: () => void;
   dispose: () => void;
 }
 
@@ -108,6 +110,14 @@ export function createShadowRender({
     gl.bindFramebuffer(gl.FRAMEBUFFER, null); // вернуть рендер на экран
   };
 
+  const clear: ShadowRender['clear'] = () => {
+    // Пустая карта теней: глубина везде 1.0 => shadowLit вернёт "освещено" везде
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.viewport(0, 0, size, size);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  };
+
   const dispose = () => {
     buffers.forEach((buffer) => gl.deleteBuffer(buffer));
     if (indexBuffer) gl.deleteBuffer(indexBuffer);
@@ -115,5 +125,5 @@ export function createShadowRender({
     gl.deleteProgram(program);
   };
 
-  return { depthTexture, size, renderDepth, dispose };
+  return { depthTexture, size, renderDepth, clear, dispose };
 }
