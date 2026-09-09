@@ -5,6 +5,11 @@
     себе point-events: auto - тогда клики по "пустом" месту уходят в canvas.
 -->
 <div class="scene__overlay">
-  <app-building-info [building]="selectedBuilding()" />
+  <app-mode-toolbar [(mode)]="activeMode" />
+
+  @if (activeMode() === 'building') {
+    <app-building-info [building]="selectedBuilding()" />
+  }
+
   <ng-content />
 </div>

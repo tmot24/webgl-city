@@ -1,4 +1,4 @@
-import { Component, ElementRef, signal, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, signal, viewChild } from '@angular/core';
 import { generateCity } from '../../city/generate-city';
 import { buildInstanceData } from '../../city/build-instance-data';
 import { injectCityRender } from '../../inject/inject-city-render';
@@ -8,12 +8,14 @@ import { vec3 } from 'gl-matrix';
 import { Building } from '../../city/generate-city.types';
 import { injectBuildingPicker } from '../../inject/inject-building-picker';
 import { BuildingInfo } from '../building-info/building-info';
+import { ModeToolbar } from '../mode-toolbar/mode-toolbar';
+import { SceneMode } from '../mode-toolbar/scene-mode';
 
 // Запас травы за границей застройки, метры
 const GROUND_MARGIN = 100;
 
 @Component({
-  imports: [BuildingInfo],
+  imports: [BuildingInfo, ModeToolbar],
   selector: 'app-scene',
   styleUrl: './scene.css',
   templateUrl: './scene.html',
@@ -22,6 +24,8 @@ export class Scene {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
 
   readonly lightDirection = signal(vec3.normalize(vec3.create(), vec3.fromValues(0.6, 1.0, 0.4)));
+
+  protected readonly activeMode = signal<SceneMode>('building');
 
   protected readonly selectedBuilding = signal<Building | null>(null);
 
@@ -66,6 +70,7 @@ export class Scene {
       viewProjection,
       eyePoint,
       selected: this.selectedBuilding,
+      enabled: computed(() => this.activeMode() === 'building'),
     });
   }
 }

@@ -14,6 +14,8 @@ interface InjectBuildingPicker {
   eyePoint: Signal<vec3>;
   // куда писать выбор
   selected: WritableSignal<Building | null>;
+  // включён ли режим выбора (Scene выводит из activeMode)
+  enabled: Signal<boolean>;
 }
 
 const CLICK_MOVE_THRESHOLD = 6; // px: дальше - это перетаскивание (пан/орбита), а не клик
@@ -28,6 +30,7 @@ export function injectBuildingPicker({
   viewProjection,
   eyePoint,
   selected,
+  enabled,
 }: InjectBuildingPicker) {
   const destroyRef = inject(DestroyRef);
 
@@ -71,6 +74,7 @@ export function injectBuildingPicker({
       };
       const onUp = (event: PointerEvent) => {
         if (event.button !== 0) return;
+        if (!enabled()) return;
         // Мышь уехала => это был пан/перетаскивание, а не клик по зданию
         if (Math.hypot(event.clientX - downX, event.clientY - downY) > CLICK_MOVE_THRESHOLD) return;
         pick(event);

@@ -1,0 +1,7 @@
+<div class="mode-toolbar">
+  @for (option of modes; track option.id) {
+    <button type="button" class="tab" [class.active]="option.id === mode()" (click)="mode.set(option.id)">
+      {{ option.label }}
+    </button>
+  }
+</div>
