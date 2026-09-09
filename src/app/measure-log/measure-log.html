@@ -1,0 +1,18 @@
+<div class="measure-log-panel">
+  <div class="title">Измерения</div>
+
+  @if (rows().length) {
+    <ol class="list">
+      @for (row of rows(); track row.id) {
+        <li>
+          <div class="len">#{{ row.id }} · {{ row.length }} м</div>
+          <div class="sub">Горизонталь {{ row.horizontal }}</div>
+          <div class="sub">Δвысота {{ row.height }} м</div>
+          <div class="pts">A ({{ row.ax }}, {{ row.ay }}, {{ row.az }})</div>
+          <div class="pts">B ({{ row.bx }}, {{ row.by }}, {{ row.bz }})</div>
+        </li>
+      }
+
+    </ol>
+  }
+</div>

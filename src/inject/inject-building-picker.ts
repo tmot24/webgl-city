@@ -4,6 +4,7 @@ import { mat4, vec3 } from 'gl-matrix';
 import { cssToNdc } from '../helper/hit-box/css-to-ndc';
 import { ndcToWorld } from '../helper/hit-box/ndc-to-world';
 import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
+import { CLICK_MOVE_THRESHOLD } from '../helper/constants';
 
 interface InjectBuildingPicker {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -17,8 +18,6 @@ interface InjectBuildingPicker {
   // включён ли режим выбора (Scene выводит из activeMode)
   enabled: Signal<boolean>;
 }
-
-const CLICK_MOVE_THRESHOLD = 6; // px: дальше - это перетаскивание (пан/орбита), а не клик
 
 /**
  * Выбор зданий: клик ЛКМ => луч из камеры через точку клика => ближайшее задетое здание.

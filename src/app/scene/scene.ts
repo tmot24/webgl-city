@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, signal, viewChild } from '@angular/core';
 import { generateCity } from '../../city/generate-city';
 import { buildInstanceData } from '../../city/build-instance-data';
 import { injectCityRender } from '../../inject/inject-city-render';
@@ -10,12 +10,15 @@ import { injectBuildingPicker } from '../../inject/inject-building-picker';
 import { BuildingInfo } from '../building-info/building-info';
 import { ModeToolbar } from '../mode-toolbar/mode-toolbar';
 import { SceneMode } from '../mode-toolbar/scene-mode';
+import { injectMeasure, Measurement } from '../../inject/inject-measure';
+import { MeasureLog } from '../measure-log/measure-log';
 
 // Запас травы за границей застройки, метры
 const GROUND_MARGIN = 100;
 
 @Component({
-  imports: [BuildingInfo, ModeToolbar],
+  imports: [BuildingInfo, ModeToolbar, MeasureLog],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-scene',
   styleUrl: './scene.css',
   templateUrl: './scene.html',
@@ -27,7 +30,11 @@ export class Scene {
 
   protected readonly activeMode = signal<SceneMode>('building');
 
+  // mode - building
   protected readonly selectedBuilding = signal<Building | null>(null);
+  // mode - measure
+  protected readonly measurements = signal<Measurement[]>([]);
+  protected readonly pendingPoint = signal<vec3 | null>(null);
 
   constructor() {
     const city = generateCity({ seed: 1 });
@@ -71,6 +78,16 @@ export class Scene {
       eyePoint,
       selected: this.selectedBuilding,
       enabled: computed(() => this.activeMode() === 'building'),
+    });
+
+    injectMeasure({
+      canvasRef: this.canvasRef,
+      buildings: city.buildings,
+      viewProjection,
+      eyePoint,
+      measurements: this.measurements,
+      pending: this.pendingPoint,
+      enabled: computed(() => this.activeMode() === 'measure'),
     });
   }
 }

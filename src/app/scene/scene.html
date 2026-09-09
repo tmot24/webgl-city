@@ -10,6 +10,9 @@
   @if (activeMode() === 'building') {
     <app-building-info [building]="selectedBuilding()" />
   }
+  @if (activeMode() === 'measure') {
+    <app-measure-log [measurements]="measurements()" [pending]="pendingPoint()" />
+  }
 
   <ng-content />
 </div>

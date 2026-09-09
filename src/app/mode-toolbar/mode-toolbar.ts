@@ -1,8 +1,9 @@
-import { Component, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, model } from '@angular/core';
 import { SCENE_MODES, SceneMode } from './scene-mode';
 
 @Component({
   imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-mode-toolbar',
   styleUrl: './mode-toolbar.css',
   templateUrl: './mode-toolbar.html',
