@@ -2,7 +2,7 @@ import { ElementRef, Signal, WritableSignal } from '@angular/core';
 import { Building } from '../city/generate-city.types';
 import { mat4, vec3 } from 'gl-matrix';
 import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
-import { injectCanvasClick } from './inject-canvas-click';
+import { injectCanvasPointer } from './inject-canvas-pointer';
 
 interface InjectBuildingPicker {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -29,7 +29,7 @@ export function injectBuildingPicker({
   selected,
   enabled,
 }: InjectBuildingPicker) {
-  injectCanvasClick({
+  injectCanvasPointer({
     canvasRef,
     viewProjection,
     eyePoint,

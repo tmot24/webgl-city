@@ -1,5 +1,4 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { Measurement } from '../../inject/inject-measure';
 import { createGLProgram } from '../core/create-gl-program';
 import vertex from '../../material/line-material/line-material.vert';
 import fragment from '../../material/line-material/line-material.frag';
@@ -8,8 +7,13 @@ import { createLineMaterial, LINE_ATTRIBUTES_LOCATION } from '../../material/lin
 import { EPSILON } from '../constants';
 
 export interface LineRenderer {
-  draw: (frame: { viewProjection: mat4; eye: vec3; measurement: Measurement | null }) => void;
+  draw: (frame: { viewProjection: mat4; eye: vec3; lineSegment: LineSegment | null }) => void;
   dispose: () => void;
+}
+
+export interface LineSegment {
+  a: vec3;
+  b: vec3;
 }
 
 const LINE_COLOR = vec3.fromValues(1.0, 0.75, 0.1);
@@ -42,17 +46,9 @@ export function createLineRenderer({ gl }: { gl: WebGL2RenderingContext }): Line
 
   const quad = new Float32Array(12); // переиспользуемый CPU-буфер вершин
 
-  const draw = ({
-    viewProjection,
-    eye,
-    measurement,
-  }: {
-    viewProjection: mat4;
-    eye: vec3;
-    measurement: Measurement | null;
-  }) => {
-    if (!measurement) return;
-    const { a, b } = measurement;
+  const draw: LineRenderer['draw'] = ({ viewProjection, eye, lineSegment }) => {
+    if (!lineSegment) return;
+    const { a, b } = lineSegment;
 
     // Билборд: боковой вектор = перпендикуляр к линии и к направлению на камеру
     const mid = vec3.lerp(vec3.create(), a, b, 0.5); // lerp - линейная интерполяция между двумя векторами

@@ -12,6 +12,7 @@ import { ModeToolbar } from '../mode-toolbar/mode-toolbar';
 import { SceneMode } from '../mode-toolbar/scene-mode';
 import { injectMeasure, Measurement } from '../../inject/inject-measure';
 import { MeasureLog } from '../measure-log/measure-log';
+import { GroundBounds } from '../../helper/hit-box/intersect-ground';
 
 // Запас травы за границей застройки, метры
 const GROUND_MARGIN = 100;
@@ -35,19 +36,35 @@ export class Scene {
   // mode - measure
   protected readonly measurements = signal<Measurement[]>([]);
   protected readonly pendingPoint = signal<vec3 | null>(null);
-  protected readonly activeMeasurement = computed(() =>
-    this.activeMode() === 'measure' ? (this.measurements().at(-1) ?? null) : null,
-  );
+  protected readonly cursorPoint = signal<vec3 | null>(null);
+  protected readonly activeLineSegment = computed(() => {
+    if (this.activeMode() !== 'measure') return null;
+    const start = this.pendingPoint();
+    if (start) {
+      const cursor = this.cursorPoint();
+      return cursor ? { a: start, b: cursor } : null;
+    }
+    const last = this.measurements().at(-1);
+    return last ? { a: last.a, b: last.b } : null;
+  });
 
   constructor() {
     const city = generateCity({ seed: 1 });
     const instanceData = buildInstanceData({ buildings: city.buildings });
 
     const { bounds } = city;
+    const groundWidth = bounds.maxX - bounds.minX + GROUND_MARGIN * 2;
+    const groundDepth = bounds.maxZ - bounds.minZ + GROUND_MARGIN * 2;
     const groundGeometry = constructPlaneGeometry({
-      width: bounds.maxX - bounds.minX + GROUND_MARGIN * 2,
-      depth: bounds.maxZ - bounds.minZ + GROUND_MARGIN * 2,
+      width: groundWidth,
+      depth: groundDepth,
     });
+    const groundBounds: GroundBounds = {
+      minX: -groundWidth / 2,
+      maxX: groundWidth / 2,
+      minZ: -groundDepth / 2,
+      maxZ: groundDepth / 2,
+    };
     const roadGeometry = buildRoadGeometry({
       road: city.road,
       bounds,
@@ -64,7 +81,7 @@ export class Scene {
       instanceData,
       sceneRadius,
       selectedBuilding: this.selectedBuilding,
-      activeMeasurement: this.activeMeasurement,
+      activeLineSegment: this.activeLineSegment,
       ground: {
         groundGeometry,
         groundColor: vec3.fromValues(0.36, 0.55, 0.32),
@@ -91,6 +108,8 @@ export class Scene {
       eyePoint,
       measurements: this.measurements,
       pending: this.pendingPoint,
+      cursorPoint: this.cursorPoint,
+      groundBounds,
       enabled: computed(() => this.activeMode() === 'measure'),
     });
   }

@@ -1,9 +1,9 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { ElementRef, Signal, WritableSignal } from '@angular/core';
 import { Building } from '../city/generate-city.types';
-import { intersectGround } from '../helper/hit-box/intersect-ground';
+import { GroundBounds, intersectGround } from '../helper/hit-box/intersect-ground';
 import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
-import { injectCanvasClick } from './inject-canvas-click';
+import { injectCanvasPointer } from './inject-canvas-pointer';
 
 export interface Measurement {
   id: number;
@@ -20,6 +20,10 @@ interface InjectMeasure {
   measurements: WritableSignal<Measurement[]>;
   // первая поставленная точка, ждём вторую (null - начинаем новое измерение)
   pending: WritableSignal<vec3 | null>;
+  // точка под курсором на поверхности (null в небе)
+  cursorPoint: WritableSignal<vec3 | null>;
+  // Прямоугольник земли
+  groundBounds: GroundBounds;
   // включён ли режим измерения (Scene выводит из activeMode)
   enabled: Signal<boolean>;
 }
@@ -31,6 +35,8 @@ export function injectMeasure({
   eyePoint,
   measurements,
   pending,
+  cursorPoint,
+  groundBounds,
   enabled,
 }: InjectMeasure) {
   let nextId = 1;
@@ -40,7 +46,7 @@ export function injectMeasure({
     let best: vec3 | null = null;
     let bestT = Infinity;
 
-    const ground = intersectGround({ origin, dir });
+    const ground = intersectGround({ origin, dir, bounds: groundBounds });
     if (ground) {
       const t = vec3.distance(origin, ground); // dir - нормализирован => t = расстояние
       if (t < bestT) {
@@ -62,7 +68,7 @@ export function injectMeasure({
     return best;
   };
 
-  injectCanvasClick({
+  injectCanvasPointer({
     canvasRef,
     viewProjection,
     eyePoint,
@@ -77,7 +83,12 @@ export function injectMeasure({
       } else {
         measurements.update((list) => [...list, { id: nextId++, a: first, b: point }]);
         pending.set(null); // измерение завершено, следующий клик начнёт новое
+        cursorPoint.set(null); // резинка больше не нужна
       }
+    },
+    onMove: ({ origin, dir }) => {
+      if (!pending()) return; // резинка только между первой и второй точкой
+      cursorPoint.set(surfacePoint({ origin, dir })); // null в небе => резинка скрыта
     },
   });
 }
