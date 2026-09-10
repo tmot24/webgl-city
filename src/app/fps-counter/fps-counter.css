@@ -1,6 +1,6 @@
 .fps {
   position: fixed;
-  top: 8px;
+  bottom: 8px;
   left: 8px;
   z-index: 10;
   padding: 2px 6px;

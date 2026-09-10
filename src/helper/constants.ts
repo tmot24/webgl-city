@@ -1,4 +1,5 @@
 import { glMatrix } from 'gl-matrix';
 
-export const CLICK_MOVE_THRESHOLD = 6; // px: дальше - это перетаскивание (пан/орбита), а не клик
+// Порог движения указателя (px): дальше - жест считается перетаскиванием (пан/орбита камеры), а не кликом.
+export const CLICK_MOVE_THRESHOLD = 6;
 export const EPSILON = glMatrix.EPSILON;

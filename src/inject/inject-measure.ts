@@ -1,11 +1,9 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { afterNextRender, DestroyRef, ElementRef, inject, Signal, WritableSignal } from '@angular/core';
+import { ElementRef, Signal, WritableSignal } from '@angular/core';
 import { Building } from '../city/generate-city.types';
 import { intersectGround } from '../helper/hit-box/intersect-ground';
 import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
-import { cssToNdc } from '../helper/hit-box/css-to-ndc';
-import { ndcToWorld } from '../helper/hit-box/ndc-to-world';
-import { CLICK_MOVE_THRESHOLD } from '../helper/constants';
+import { injectCanvasClick } from './inject-canvas-click';
 
 export interface Measurement {
   id: number;
@@ -35,7 +33,6 @@ export function injectMeasure({
   pending,
   enabled,
 }: InjectMeasure) {
-  const destroyRef = inject(DestroyRef);
   let nextId = 1;
 
   // Ближайшая точка на поверхности вдоль луча: земля или AABB здания. null - луч мимо всего (небо)
@@ -65,51 +62,22 @@ export function injectMeasure({
     return best;
   };
 
-  const place = (event: PointerEvent) => {
-    const canvas = canvasRef().nativeElement;
-    const rect = canvas.getBoundingClientRect();
-    const { ndcX, ndcY } = cssToNdc({ event, rect });
+  injectCanvasClick({
+    canvasRef,
+    viewProjection,
+    eyePoint,
+    enabled,
+    onClick: ({ origin, dir }) => {
+      const point = surfacePoint({ origin, dir });
+      if (!point) return; // клик в небо
 
-    const inverseVP = mat4.invert(mat4.create(), viewProjection());
-    if (!inverseVP) return;
-    const far = ndcToWorld({ ndcX, ndcY, ndcZ: 1, inverseVP });
-    const origin = eyePoint();
-    const dir = vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), far, origin));
-
-    const point = surfacePoint({ origin, dir });
-    if (!point) return; // клик в небо
-
-    const first = pending();
-    if (!first) {
-      pending.set(point); // первая точка отрезка
-    } else {
-      measurements.update((list) => [...list, { id: nextId++, a: first, b: point }]);
-      pending.set(null); // измерение завершено, следующий клик начнёт новое
-    }
-  };
-
-  afterNextRender(() => {
-    const canvas = canvasRef().nativeElement;
-    let downX = 0;
-    let downY = 0;
-
-    const onDown = (event: PointerEvent) => {
-      if (event.button !== 0) return;
-      downX = event.clientX;
-      downY = event.clientY;
-    };
-    const onUp = (event: PointerEvent) => {
-      if (event.button !== 0) return;
-      if (!enabled()) return;
-      if (Math.hypot(event.clientX - downX, event.clientY - downY) > CLICK_MOVE_THRESHOLD) return;
-      place(event);
-    };
-
-    canvas.addEventListener('pointerdown', onDown);
-    canvas.addEventListener('pointerup', onUp);
-    destroyRef.onDestroy(() => {
-      canvas.removeEventListener('pointerdown', onDown);
-      canvas.removeEventListener('pointerup', onUp);
-    });
+      const first = pending();
+      if (!first) {
+        pending.set(point); // первая точка отрезка
+      } else {
+        measurements.update((list) => [...list, { id: nextId++, a: first, b: point }]);
+        pending.set(null); // измерение завершено, следующий клик начнёт новое
+      }
+    },
   });
 }
