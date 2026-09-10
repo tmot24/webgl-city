@@ -35,6 +35,9 @@ export class Scene {
   // mode - measure
   protected readonly measurements = signal<Measurement[]>([]);
   protected readonly pendingPoint = signal<vec3 | null>(null);
+  protected readonly activeMeasurement = computed(() =>
+    this.activeMode() === 'measure' ? (this.measurements().at(-1) ?? null) : null,
+  );
 
   constructor() {
     const city = generateCity({ seed: 1 });
@@ -61,6 +64,7 @@ export class Scene {
       instanceData,
       sceneRadius,
       selectedBuilding: this.selectedBuilding,
+      activeMeasurement: this.activeMeasurement,
       ground: {
         groundGeometry,
         groundColor: vec3.fromValues(0.36, 0.55, 0.32),

@@ -10,6 +10,8 @@ import { FlatGeometry } from '../road/build-road-geometry';
 import { createShadowRender, ShadowRender } from '../helper/render/create-shadow-render';
 import { createLightViewProjection } from '../helper/matrix/create-light-view-projection';
 import { Building } from '../city/generate-city.types';
+import { Measurement } from './inject-measure';
+import { createLineRenderer, LineRenderer } from '../helper/render/create-line-renderer';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -27,6 +29,7 @@ interface InjectCityRender {
   // радиус охватывающий сферы города - под ортобокс карты теней (уже не надо, но пока оставлю, мало ли понадобиться)
   sceneRadius: number;
   selectedBuilding: Signal<Building | null>;
+  activeMeasurement: Signal<Measurement | null>;
 }
 
 // Тень следует за каерой: охват = дистанция зума * фактор, зажатый в разумные пределы.
@@ -41,6 +44,7 @@ export function injectCityRender({
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
   lightDirection,
   selectedBuilding,
+  activeMeasurement,
 }: InjectCityRender) {
   const size = injectCanvasSize({ canvasRef });
   const castShadows = signal(true);
@@ -63,6 +67,7 @@ export function injectCityRender({
   let buildings: BuildingRenderer | null = null;
   let surface: SurfaceRenderer | null = null;
   let shadow: ShadowRender | null = null;
+  let line: LineRenderer | null = null;
 
   // ОДИН РАЗ: контекст, программа, рендеры (здания, поверхности) и depth-проход теней
   afterNextRender({
@@ -89,11 +94,13 @@ export function injectCityRender({
         ],
       });
       shadow = createShadowRender({ gl, instanceData, destroyRef, size: 4096 });
+      line = createLineRenderer({ gl });
 
       destroyRef.onDestroy(() => {
         buildings?.dispose();
         surface?.dispose();
         shadow?.dispose();
+        line?.dispose();
       });
 
       render(); // первый кадр сразу
@@ -106,7 +113,7 @@ export function injectCityRender({
   });
 
   function render() {
-    if (!gl || !buildings || !surface || !shadow) return;
+    if (!gl || !buildings || !surface || !shadow || !line) return;
 
     const { width, height } = size();
     const canvas = canvasRef().nativeElement;
@@ -147,6 +154,8 @@ export function injectCityRender({
       lightViewProjection,
       selectedId: selectedBuilding()?.id ?? -1,
     });
+    // Измерительная линия - поверх всего
+    line.draw({ viewProjection: camera, eye: eyePoint(), measurement: activeMeasurement() });
   }
 
   return { lightDirection, castShadows, viewProjection, eyePoint };
