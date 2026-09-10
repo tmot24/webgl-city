@@ -44,11 +44,11 @@
     font-weight: 600;
   }
   .sub {
-    opacity: 0.85;
+    opacity: 0.9;
     font-size: 12px;
   }
   .pts {
-    opacity: 0.6;
+    opacity: 0.8;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
   }

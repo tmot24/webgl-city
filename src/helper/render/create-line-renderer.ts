@@ -14,7 +14,7 @@ export interface LineRenderer {
 
 const LINE_COLOR = vec3.fromValues(1.0, 0.75, 0.1);
 // Полутолщина = factor * расстояние до камеры => на экране толщина почти постоянна на любом зуме
-const LINE_HALF_WIDTH_FACTOR = 0.002;
+const LINE_HALF_WIDTH_FACTOR = 0.001;
 
 /**
  * Рендер измерительной линии: отрезок a->b рисуется билборд-прямоугольником
