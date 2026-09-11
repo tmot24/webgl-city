@@ -157,5 +157,5 @@ export function injectCityRender({
     line.draw({ viewProjection: camera, eye: eyePoint(), lineSegment: activeLineSegment() });
   }
 
-  return { lightDirection, castShadows, viewProjection, eyePoint };
+  return { lightDirection, castShadows, viewProjection, eyePoint, size };
 }

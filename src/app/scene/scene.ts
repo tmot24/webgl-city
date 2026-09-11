@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, Signal, signal, viewChild } from '@angular/core';
 import { generateCity } from '../../city/generate-city';
 import { buildInstanceData } from '../../city/build-instance-data';
 import { injectCityRender } from '../../inject/inject-city-render';
 import { constructPlaneGeometry } from '../../helper/geometry/construct-plane-geometry';
 import { buildRoadGeometry } from '../../road/build-road-geometry';
-import { vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { Building } from '../../city/generate-city.types';
 import { injectBuildingPicker } from '../../inject/inject-building-picker';
 import { BuildingInfo } from '../building-info/building-info';
@@ -13,12 +13,14 @@ import { SceneMode } from '../mode-toolbar/scene-mode';
 import { injectMeasure, Measurement } from '../../inject/inject-measure';
 import { MeasureLog } from '../measure-log/measure-log';
 import { GroundBounds } from '../../helper/hit-box/intersect-ground';
+import { worldToScreen } from '../../helper/hit-box/world-to-screen';
+import { MeasureLabel, MeasureLabelData } from '../measure-label/measure-label';
 
 // Запас травы за границей застройки, метры
 const GROUND_MARGIN = 100;
 
 @Component({
-  imports: [BuildingInfo, ModeToolbar, MeasureLog],
+  imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-scene',
   styleUrl: './scene.css',
@@ -27,6 +29,9 @@ const GROUND_MARGIN = 100;
 export class Scene {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
 
+  // Камера рендера - нужна для проекции подписи 3D на экран
+  private viewProjection!: () => mat4;
+  private viewportSize!: Signal<{ width: number; height: number }>;
   readonly lightDirection = signal(vec3.normalize(vec3.create(), vec3.fromValues(0.6, 1.0, 0.4)));
 
   protected readonly activeMode = signal<SceneMode>('building');
@@ -46,6 +51,25 @@ export class Scene {
     }
     const last = this.measurements().at(-1);
     return last ? { a: last.a, b: last.b } : null;
+  });
+  // Экранная позиция подписи над серединой активного отрезка + текст длины
+  protected readonly measureLabel = computed((): MeasureLabelData | null => {
+    const segment = this.activeLineSegment();
+    if (!segment) return null;
+    this.viewportSize(); // зависимость: пересчёт при ресйзе (значение из clientWidth)
+
+    const canvas = this.canvasRef().nativeElement;
+    const mid = vec3.lerp(vec3.create(), segment.a, segment.b, 0.5);
+    const screen = worldToScreen({
+      point: mid,
+      viewProjection: this.viewProjection(),
+      width: canvas.clientWidth,
+      height: canvas.clientHeight,
+    });
+    if (!screen) return null; // точка за камерой
+
+    const length = vec3.distance(segment.a, segment.b);
+    return { x: screen.x, y: screen.y, text: `${length.toFixed(2)} м` };
   });
 
   constructor() {
@@ -75,7 +99,7 @@ export class Scene {
     const maxHeight = city.buildings.reduce((max, { height }) => Math.max(max, height), 0);
     const sceneRadius = Math.hypot(bounds.maxX, maxHeight, bounds.maxZ);
 
-    const { viewProjection, eyePoint } = injectCityRender({
+    const { viewProjection, eyePoint, size } = injectCityRender({
       canvasRef: this.canvasRef,
       lightDirection: this.lightDirection,
       instanceData,
@@ -91,6 +115,9 @@ export class Scene {
         roadColor: vec3.fromValues(0.25, 0.25, 0.27),
       },
     });
+
+    this.viewProjection = viewProjection;
+    this.viewportSize = size;
 
     injectBuildingPicker({
       canvasRef: this.canvasRef,

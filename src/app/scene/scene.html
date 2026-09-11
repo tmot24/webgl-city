@@ -12,6 +12,7 @@
   }
   @if (activeMode() === 'measure') {
     <app-measure-log [measurements]="measurements()" [pending]="pendingPoint()" />
+    <app-measure-label [label]="measureLabel()" />
   }
 
   <ng-content />
