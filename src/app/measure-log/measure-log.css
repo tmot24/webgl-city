@@ -53,13 +53,14 @@
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.08);
     cursor: pointer;
+    border: 1px solid transparent; /* резерв под рамку выбора, чтобы не дёргалось */
   }
   .item:hover {
     background: rgba(255, 255, 255, 0.14);
   }
   .item_selected {
     background: rgba(255, 210, 77, 0.22);
-    outline: 1px solid rgba(255, 210, 77, 0.6);
+    border-color: rgba(255, 210, 77, 0.6);
   }
 
   .item__remove {
