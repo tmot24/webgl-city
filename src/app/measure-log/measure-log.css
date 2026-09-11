@@ -4,7 +4,7 @@
   position: relative;
 }
 
-.measure-log-panel {
+.panel {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -17,13 +17,24 @@
     13px/1.35 ui-sans-serif,
     system-ui,
     sans-serif;
-
+  pointer-events: auto; /* интерактивная панель: клики/скролл/удаление */
   user-select: none;
 
   .title {
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
+  .hint {
+    opacity: 0.75;
+    font-style: italic;
+  }
+  .hint_pending {
+    margin: 8px 0;
+    color: #ffd24d;
+    opacity: 1;
+    font-style: normal;
+  }
+
   .list {
     margin: 0;
     padding: 0;
@@ -33,13 +44,44 @@
     gap: 8px;
     overflow-y: auto;
     pointer-events: auto;
-    max-height: calc(100dvh - 60px);
+    max-height: calc(100dvh - 62px);
   }
-  li {
-    padding: 6px 8px;
+
+  .item {
+    position: relative;
+    padding: 6px 26px 6px 8px;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
   }
+  .item:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+  .item_selected {
+    background: rgba(255, 210, 77, 0.22);
+    outline: 1px solid rgba(255, 210, 77, 0.6);
+  }
+
+  .item__remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #fff;
+    opacity: 0.5;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .item__remove:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
   .len {
     font-weight: 600;
   }
@@ -51,13 +93,5 @@
     opacity: 0.8;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
-  }
-  .hint {
-    opacity: 0.75;
-    font-style: italic;
-  }
-  .pending {
-    margin-top: 6px;
-    color: #ffd24d;
   }
 }

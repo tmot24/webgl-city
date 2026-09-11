@@ -15,9 +15,7 @@ import { MeasureLog } from '../measure-log/measure-log';
 import { GroundBounds } from '../../helper/hit-box/intersect-ground';
 import { worldToScreen } from '../../helper/hit-box/world-to-screen';
 import { MeasureLabel, MeasureLabelData } from '../measure-label/measure-label';
-
-// Запас травы за границей застройки, метры
-const GROUND_MARGIN = 100;
+import { GROUND_MARGIN } from '../../helper/constants';
 
 @Component({
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel],
@@ -42,6 +40,8 @@ export class Scene {
   protected readonly measurements = signal<Measurement[]>([]);
   protected readonly pendingPoint = signal<vec3 | null>(null);
   protected readonly cursorPoint = signal<vec3 | null>(null);
+  // id выбранного в логе измерения
+  protected readonly selectedMeasurementId = signal<number | null>(null);
   protected readonly activeLineSegment = computed(() => {
     if (this.activeMode() !== 'measure') return null;
     const start = this.pendingPoint();
@@ -49,8 +49,10 @@ export class Scene {
       const cursor = this.cursorPoint();
       return cursor ? { a: start, b: cursor } : null;
     }
-    const last = this.measurements().at(-1);
-    return last ? { a: last.a, b: last.b } : null;
+    const list = this.measurements();
+    const selectedId = this.selectedMeasurementId();
+    const chosen = selectedId !== null ? list.find(({ id }) => id === selectedId) : undefined;
+    return chosen ? { a: chosen.a, b: chosen.b } : null;
   });
   // Экранная позиция подписи над серединой активного отрезка + текст длины
   protected readonly measureLabel = computed((): MeasureLabelData | null => {
@@ -114,6 +116,7 @@ export class Scene {
         roadGeometry,
         roadColor: vec3.fromValues(0.25, 0.25, 0.27),
       },
+      isHighlightBuild: computed(() => this.activeMode() === 'building'),
     });
 
     this.viewProjection = viewProjection;
@@ -136,8 +139,13 @@ export class Scene {
       measurements: this.measurements,
       pending: this.pendingPoint,
       cursorPoint: this.cursorPoint,
+      selectedMeasurementId: this.selectedMeasurementId,
       groundBounds,
       enabled: computed(() => this.activeMode() === 'measure'),
     });
+  }
+
+  protected removeMeasurement(id: number) {
+    this.measurements.update((list) => list.filter((measurement) => measurement.id !== id));
   }
 }

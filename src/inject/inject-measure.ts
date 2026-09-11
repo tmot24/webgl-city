@@ -22,6 +22,7 @@ interface InjectMeasure {
   pending: WritableSignal<vec3 | null>;
   // точка под курсором на поверхности (null в небе)
   cursorPoint: WritableSignal<vec3 | null>;
+  selectedMeasurementId: WritableSignal<number | null>;
   // Прямоугольник земли
   groundBounds: GroundBounds;
   // включён ли режим измерения (Scene выводит из activeMode)
@@ -36,6 +37,7 @@ export function injectMeasure({
   measurements,
   pending,
   cursorPoint,
+  selectedMeasurementId,
   groundBounds,
   enabled,
 }: InjectMeasure) {
@@ -80,8 +82,11 @@ export function injectMeasure({
       const first = pending();
       if (!first) {
         pending.set(point); // первая точка отрезка
+        selectedMeasurementId.set(null); // сброс выбора
       } else {
-        measurements.update((list) => [...list, { id: nextId++, a: first, b: point }]);
+        const id = nextId++;
+        measurements.update((list) => [...list, { id, a: first, b: point }]);
+        selectedMeasurementId.set(id); // сброс выбора
         pending.set(null); // измерение завершено, следующий клик начнёт новое
         cursorPoint.set(null); // резинка больше не нужна
       }

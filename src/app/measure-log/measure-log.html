@@ -1,10 +1,24 @@
-<div class="measure-log-panel">
+<div class="panel">
   <div class="title">Измерения</div>
+
+  @if (pending()) {
+    <div class="list">
+      <div class="item hint hint_pending">Первая точка поставлена - выберите вторую</div>
+    </div>
+  }
 
   @if (rows().length) {
     <ol class="list">
       @for (row of rows(); track row.id) {
-        <li>
+        <li class="item" [class.item_selected]="row.id === selectedId()" (click)="select.emit(row.id)">
+          <button
+            class="item__remove"
+            type="button"
+            title="Удалить"
+            (click)="$event.stopPropagation(); remove.emit(row.id)"
+          >
+            ×
+          </button>
           <div class="len">#{{ row.id }} · {{ row.length }} м</div>
           <div class="sub">Горизонталь {{ row.horizontal }}</div>
           <div class="sub">Высота {{ row.height }} м</div>

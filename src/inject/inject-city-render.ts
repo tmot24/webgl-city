@@ -29,6 +29,8 @@ interface InjectCityRender {
   sceneRadius: number;
   selectedBuilding: Signal<Building | null>;
   activeLineSegment: Signal<LineSegment | null>;
+  // подсветка выбранного здания
+  isHighlightBuild: Signal<boolean>;
 }
 
 // Тень следует за каерой: охват = дистанция зума * фактор, зажатый в разумные пределы.
@@ -44,6 +46,7 @@ export function injectCityRender({
   lightDirection,
   selectedBuilding,
   activeLineSegment,
+  isHighlightBuild,
 }: InjectCityRender) {
   const size = injectCanvasSize({ canvasRef });
   const castShadows = signal(true);
@@ -147,11 +150,12 @@ export function injectCityRender({
     gl.bindTexture(gl.TEXTURE_2D, shadow.depthTexture);
 
     surface.draw({ viewProjection: camera, lightViewProjection }); // трава + дороги принимаю тень
+    const selectedId = isHighlightBuild() ? (selectedBuilding()?.id ?? -1) : -1;
     buildings.draw({
       viewProjection: camera,
       lightDirection: light,
       lightViewProjection,
-      selectedId: selectedBuilding()?.id ?? -1,
+      selectedId,
     });
     // Измерительная линия - поверх всего
     line.draw({ viewProjection: camera, eye: eyePoint(), lineSegment: activeLineSegment() });

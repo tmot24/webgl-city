@@ -11,7 +11,13 @@
     <app-building-info [building]="selectedBuilding()" />
   }
   @if (activeMode() === 'measure') {
-    <app-measure-log [measurements]="measurements()" [pending]="pendingPoint()" />
+    <app-measure-log
+      [measurements]="measurements()"
+      [pending]="pendingPoint()"
+      [selectedId]="selectedMeasurementId()"
+      (select)="selectedMeasurementId.set($event)"
+      (remove)="removeMeasurement($event)"
+    />
     <app-measure-label [label]="measureLabel()" />
   }
 
