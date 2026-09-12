@@ -18,10 +18,8 @@
     border-radius: 6px;
     background: transparent;
     color: #ddd;
-    font:
-      13px/1 ui-sans-serif,
-      system-ui,
-      sans-serif;
+    font-family: var(--font-family);
+    font-size: var(--font-body);
     cursor: pointer;
   }
   .tab:hover {

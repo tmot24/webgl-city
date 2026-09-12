@@ -5,6 +5,5 @@
   transform: translateX(-50%);
   max-width: 360px;
   text-align: center;
-  font-size: 12px;
   pointer-events: none;
 }

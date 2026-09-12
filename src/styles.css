@@ -8,21 +8,58 @@ body {
   overflow: hidden;
 }
 
+:root {
+  /* Типографика: единая шкала для всего UI поверх сцены (rem от корня 16px). */
+  --font-family: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --font-secondary: 0.875rem; /* 14px — координаты, fps, мелкое */
+  --font-body: 1rem; /* 16px — основной UI */
+  --font-title: 1.25rem; /* 20px — заголовки панелей */
+
+  --line-body: 1.4;
+}
+
 .ui-panel {
   padding: 10px 12px;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
-  font:
-    24px/1.5 ui-sans-serif,
-    system-ui,
-    sans-serif;
+  font-family: var(--font-family);
+  font-size: var(--font-body);
+  line-height: var(--line-body);
   user-select: none;
 }
+
 .ui-panel__title {
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  font-size: var(--font-title);
 }
+
 .ui-panel__hint {
-  opacity: 0.75;
+  opacity: 0.9;
+}
+
+.ui-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.ui-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.ui-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ui-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.ui-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }

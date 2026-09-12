@@ -8,7 +8,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 260px;
+  width: 200px;
   pointer-events: auto; /* интерактивная панель: клики/скролл/удаление */
 }
 
@@ -20,7 +20,9 @@
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  max-height: calc(100dvh - 62px);
+  max-height: calc(100dvh - 72px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 .item {
@@ -51,7 +53,7 @@
   color: #fff;
   opacity: 0.5;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-body);
   line-height: 1;
 }
 .item__remove:hover {
@@ -64,10 +66,10 @@
 }
 .sub {
   opacity: 0.9;
-  font-size: 12px;
+  font-size: var(--font-secondary);
 }
 .pts {
   opacity: 0.8;
-  font-size: 12px;
+  font-size: var(--font-secondary);
   font-variant-numeric: tabular-nums;
 }

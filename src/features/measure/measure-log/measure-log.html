@@ -2,7 +2,7 @@
   <div class="ui-panel__title">Измерения</div>
 
   @if (rows().length) {
-    <ol class="list">
+    <ol class="list ui-scroll">
       @for (row of rows(); track row.id) {
         <li class="item" [class.item_selected]="row.id === selectedId()" (click)="select.emit(row.id)">
           <button
