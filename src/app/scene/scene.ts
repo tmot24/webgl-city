@@ -3,7 +3,7 @@ import { generateCity } from '../../city/generate-city';
 import { buildInstanceData } from '../../city/build-instance-data';
 import { injectCityRender } from '../../render/inject-city-render';
 import { constructPlaneGeometry } from '../../shared/geometry/construct-plane-geometry';
-import { buildRoadGeometry } from '../../road/build-road-geometry';
+import { buildRoadGeometry } from '../../city/road/build-road-geometry';
 import { mat4, vec3 } from 'gl-matrix';
 import { Building } from '../../city/generate-city.types';
 import { injectBuildingPicker } from '../../features/building-pick/inject-building-picker';

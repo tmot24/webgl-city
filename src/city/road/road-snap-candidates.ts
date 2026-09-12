@@ -1,4 +1,4 @@
-import { RoadGrid } from '../city/generate-city.types';
+import { RoadGrid } from '../generate-city.types';
 import { vec3 } from 'gl-matrix';
 
 interface RoadSnapCandidates {

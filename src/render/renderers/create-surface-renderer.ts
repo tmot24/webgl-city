@@ -1,6 +1,6 @@
 import vertex from '../material/flat-color-material/flat-color-material.vert';
 import fragment from '../material/flat-color-material/flat-color-material.frag';
-import { FlatGeometry } from '../../road/build-road-geometry';
+import { FlatGeometry } from '../../city/road/build-road-geometry';
 import { mat4, vec3 } from 'gl-matrix';
 import { createGLProgram } from '../../shared/gl/create-gl-program';
 import { createFlatColorMaterial, FLAT_ATTRIBUTES_LOCATION } from '../material/flat-color-material/flat-color-material';
@@ -18,7 +18,7 @@ export interface SurfaceRenderer {
   dispose: () => void;
 }
 
-export function surfaceRenderer({
+export function createSurfaceRenderer({
   gl,
   surfaces,
 }: {

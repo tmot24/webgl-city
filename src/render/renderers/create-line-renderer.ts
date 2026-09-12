@@ -25,7 +25,7 @@ const LINE_HALF_WIDTH_FACTOR = 0.001;
  * (перпендикуляр к линии, обращённый к камере), поверх всей сцены (без depth-теста).
  * Квад пересобирается каждый кадр из текущего измерения и позиции камеры.
  * */
-export function lineRenderer({ gl }: { gl: WebGL2RenderingContext }): LineRenderer {
+export function createLineRenderer({ gl }: { gl: WebGL2RenderingContext }): LineRenderer {
   const program = createGLProgram({ gl, vertex, fragment });
 
   const { vao, buffers } = createVAO({

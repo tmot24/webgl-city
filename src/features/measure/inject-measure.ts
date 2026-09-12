@@ -8,7 +8,7 @@ import { Ray } from '../../shared/ray/screen-point-to-ray';
 import { snapToNearest } from '../../shared/ray/snap-to-nearest';
 import { buildingCorners } from '../../city/building-corners';
 import { SNAP_PIXEL_THRESHOLD } from '../../shared/constants';
-import { roadSnapCandidates } from '../../road/road-snap-candidates';
+import { roadSnapCandidates } from '../../city/road/road-snap-candidates';
 
 export interface Measurement {
   id: number;

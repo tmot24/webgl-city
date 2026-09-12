@@ -4,13 +4,13 @@ import { vec3 } from 'gl-matrix';
 import { injectCanvasSize } from './inject-canvas-size';
 import { injectOrbitCamera } from '../camera/inject-orbit-camera';
 import { createViewProjectionMatrix } from '../shared/math/create-view-projection-matrix';
-import { BuildingRenderer, buildingRenderer } from './renderers/building-renderer';
-import { surfaceRenderer, SurfaceRenderer } from './renderers/surface-renderer';
-import { FlatGeometry } from '../road/build-road-geometry';
-import { ShadowRender, shadowRenderer } from './renderers/shadow-renderer';
+import { BuildingRenderer, createBuildingRenderer } from './renderers/create-building-renderer';
+import { createSurfaceRenderer, SurfaceRenderer } from './renderers/create-surface-renderer';
+import { FlatGeometry } from '../city/road/build-road-geometry';
+import { createShadowRenderer, ShadowRender } from './renderers/create-shadow-renderer';
 import { createLightViewProjection } from '../shared/math/create-light-view-projection';
 import { Building } from '../city/generate-city.types';
-import { lineRenderer, LineRenderer, LineSegment } from './renderers/line-renderer';
+import { createLineRenderer, LineRenderer, LineSegment } from './renderers/create-line-renderer';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -81,8 +81,8 @@ export function injectCityRender({
       gl.enable(gl.DEPTH_TEST);
       gl.clearColor(0.53, 0.7, 0.87, 1); // небесный фон
 
-      buildings = buildingRenderer({ gl, instanceData });
-      surface = surfaceRenderer({
+      buildings = createBuildingRenderer({ gl, instanceData });
+      surface = createSurfaceRenderer({
         gl,
         surfaces: [
           {
@@ -95,8 +95,8 @@ export function injectCityRender({
           },
         ],
       });
-      shadow = shadowRenderer({ gl, instanceData, destroyRef, size: 4096 });
-      line = lineRenderer({ gl });
+      shadow = createShadowRenderer({ gl, instanceData, destroyRef, size: 4096 });
+      line = createLineRenderer({ gl });
 
       destroyRef.onDestroy(() => {
         buildings?.dispose();

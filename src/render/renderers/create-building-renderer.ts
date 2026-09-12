@@ -15,7 +15,7 @@ export interface BuildingRenderer {
 }
 
 // Рендер зданий: экземпляр куба со светом.
-export function buildingRenderer({
+export function createBuildingRenderer({
   gl,
   instanceData,
 }: {

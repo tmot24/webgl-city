@@ -28,7 +28,7 @@ export interface ShadowRender {
  * Здания - (пока) единственные, кто отбрасывает тень; земля/дороги только принимают.
  * Свой VAO (position/translation/scale) - рендерер самодостаточен; normal для глубины не нужен
  * */
-export function shadowRenderer({
+export function createShadowRenderer({
   gl,
   instanceData,
   destroyRef,

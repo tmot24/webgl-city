@@ -1,5 +1,5 @@
 // Единая форма плоской геометрии в мировых координатах (без нормалей - flat-материал их не использует)
-import { CityBounds, RoadGrid } from '../city/generate-city.types';
+import { CityBounds, RoadGrid } from '../generate-city.types';
 
 export interface FlatGeometry {
   position: Float32Array;
