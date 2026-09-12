@@ -2,6 +2,7 @@ import { afterNextRender, computed, DestroyRef, ElementRef, inject, signal, Sign
 import { mat4, vec3 } from 'gl-matrix';
 import { panHandler } from './handlers/pan-handler';
 import { rotateHandler } from './handlers/rotate-handler';
+import { isEditableTarget } from '../shared/dom/is-editable-target';
 
 interface InjectOrbitCamera {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -126,11 +127,6 @@ export function injectOrbitCamera({
     // deltaY < 0 (крутим "на себя") => factor < 1 => приближаемся
     const factor = Math.exp(event.deltaY * zoomSpeed);
     radius.update((r) => Math.min(maxRadius, Math.max(minRadius, r * factor)));
-  };
-
-  const isEditableTarget = (target: EventTarget | null) => {
-    const el = target as HTMLElement | null;
-    return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
   };
 
   const keyDownHandler = (event: KeyboardEvent) => {

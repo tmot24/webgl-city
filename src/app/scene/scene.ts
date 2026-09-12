@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, Signal, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  Signal,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { generateCity } from '../../city/generate-city';
 import { buildInstanceData } from '../../city/build-instance-data';
 import { injectCityRender } from '../../render/inject-city-render';
@@ -19,6 +28,7 @@ import { GROUND_MARGIN } from '../../shared/constants';
 import { SnapMarker } from '../../features/measure/snap-marker/snap-marker';
 import { ControlHint } from '../control-hint/control-hint';
 import { ModeHint } from '../../features/mode/mode-hint/mode-hint';
+import { isEditableTarget } from '../../shared/dom/is-editable-target';
 
 @Component({
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint],
@@ -171,5 +181,20 @@ export class Scene {
 
   protected removeMeasurement(id: number) {
     this.measurements.update((list) => list.filter((measurement) => measurement.id !== id));
+  }
+
+  // Esc сбрасывает текущее действие режима
+  @HostListener('window:keydown.escape', ['$event'])
+  protected onEscape(event: Event) {
+    if (isEditableTarget(event.target)) return;
+
+    if (this.activeMode() === 'measure') {
+      this.pendingPoint.set(null);
+      this.cursorPoint.set(null);
+      this.snapPoint.set(null);
+      this.selectedMeasurementId.set(null);
+    } else if (this.activeMode() === 'building') {
+      this.selectedBuilding.set(null);
+    }
   }
 }

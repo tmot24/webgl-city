@@ -3,7 +3,7 @@
   top: 48px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 360px;
+  max-width: 400px;
   text-align: center;
   pointer-events: none;
 }
