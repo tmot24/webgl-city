@@ -1,0 +1,10 @@
+.marker {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px; /* центрируем кружок на точке */
+  border-radius: 50%;
+  border: 2px solid #ffd24d;
+  background: rgba(255, 210, 77, 0.25);
+  pointer-events: none;
+}

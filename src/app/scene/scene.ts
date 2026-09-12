@@ -16,9 +16,10 @@ import { GroundBounds } from '../../helper/hit-box/intersect-ground';
 import { worldToScreen } from '../../helper/hit-box/world-to-screen';
 import { MeasureLabel, MeasureLabelData } from '../measure-label/measure-label';
 import { GROUND_MARGIN } from '../../helper/constants';
+import { SnapMarker } from '../snap-marker/snap-marker';
 
 @Component({
-  imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel],
+  imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-scene',
   styleUrl: './scene.css',
@@ -40,6 +41,8 @@ export class Scene {
   protected readonly measurements = signal<Measurement[]>([]);
   protected readonly pendingPoint = signal<vec3 | null>(null);
   protected readonly cursorPoint = signal<vec3 | null>(null);
+  // точка залипания
+  protected readonly snapPoint = signal<vec3 | null>(null);
   // id выбранного в логе измерения
   protected readonly selectedMeasurementId = signal<number | null>(null);
   protected readonly activeLineSegment = computed(() => {
@@ -71,7 +74,24 @@ export class Scene {
     if (!screen) return null; // точка за камерой
 
     const length = vec3.distance(segment.a, segment.b);
-    return { x: screen.x, y: screen.y, text: `${length.toFixed(2)} м` };
+    return {
+      x: screen.x,
+      y: screen.y,
+      text: `${length.toFixed(2)} м`,
+    };
+  });
+  protected readonly snapMarker = computed(() => {
+    const point = this.snapPoint();
+    if (!point) return null;
+    this.viewportSize(); // зависимость: пересчёт при ресайзе
+
+    const canvas = this.canvasRef().nativeElement;
+    return worldToScreen({
+      point,
+      viewProjection: this.viewProjection(),
+      width: canvas.clientWidth,
+      height: canvas.clientHeight,
+    });
   });
 
   constructor() {
@@ -139,6 +159,7 @@ export class Scene {
       measurements: this.measurements,
       pending: this.pendingPoint,
       cursorPoint: this.cursorPoint,
+      snapPoint: this.snapPoint,
       selectedMeasurementId: this.selectedMeasurementId,
       groundBounds,
       enabled: computed(() => this.activeMode() === 'measure'),

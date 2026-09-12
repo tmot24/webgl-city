@@ -4,6 +4,10 @@ import { Building } from '../city/generate-city.types';
 import { GroundBounds, intersectGround } from '../helper/hit-box/intersect-ground';
 import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
 import { injectCanvasPointer } from './inject-canvas-pointer';
+import { Ray } from '../helper/hit-box/screen-point-to-ray';
+import { snapToNearest } from '../helper/hit-box/snap-to-nearest';
+import { buildingCorners } from '../city/building-corners';
+import { SNAP_PIXEL_THRESHOLD } from '../helper/constants';
 
 export interface Measurement {
   id: number;
@@ -22,7 +26,10 @@ interface InjectMeasure {
   pending: WritableSignal<vec3 | null>;
   // точка под курсором на поверхности (null в небе)
   cursorPoint: WritableSignal<vec3 | null>;
+  // выбранное измерение
   selectedMeasurementId: WritableSignal<number | null>;
+  // точка залипания к углу здания (для маркера)
+  snapPoint: WritableSignal<vec3 | null>;
   // Прямоугольник земли
   groundBounds: GroundBounds;
   // включён ли режим измерения (Scene выводит из activeMode)
@@ -37,37 +44,55 @@ export function injectMeasure({
   measurements,
   pending,
   cursorPoint,
+  snapPoint,
   selectedMeasurementId,
   groundBounds,
   enabled,
 }: InjectMeasure) {
   let nextId = 1;
 
-  // Ближайшая точка на поверхности вдоль луча: земля или AABB здания. null - луч мимо всего (небо)
-  const surfacePoint = ({ origin, dir }: { origin: vec3; dir: vec3 }) => {
-    let best: vec3 | null = null;
-    let bestT = Infinity;
+  // Ближайшая поверхность вдоль луча + какое здание задето (null - земля). null - мимо всего (небо).
+  const hitSurface = ({ origin, dir }: Ray) => {
+    let best: { point: vec3; building: Building | null } | null = null;
+    let bestT = Infinity; // T - математическое, расстояние луча до точки пересечения
 
     const ground = intersectGround({ origin, dir, bounds: groundBounds });
     if (ground) {
-      const t = vec3.distance(origin, ground); // dir - нормализирован => t = расстояние
-      if (t < bestT) {
-        bestT = t;
-        best = ground;
-      }
+      const t = vec3.distance(origin, ground); // dir - нормализован => t = расстояние
+      bestT = t;
+      best = { point: ground, building: null };
     }
 
-    for (const { cx, cz, height, depth, width } of buildings) {
+    for (const building of buildings) {
+      const { cx, cz, height, depth, width } = building;
       const boxMin = vec3.fromValues(cx - width / 2, 0, cz - depth / 2);
       const boxMax = vec3.fromValues(cx + width / 2, height, cz + depth / 2);
       const t = rayBoxDistance({ origin, dir, boxMin, boxMax });
       if (t !== null && t < bestT) {
         bestT = t;
-        best = vec3.scaleAndAdd(vec3.create(), origin, dir, t);
+        best = { point: vec3.scaleAndAdd(vec3.create(), origin, dir, t), building };
       }
     }
 
     return best;
+  };
+
+  // Финальная точка с учётом прилипания: если задели здание - пробуем прилипнуть к его 8 углам
+  const resolvePoint = ({ origin, dir }: Ray) => {
+    const hit = hitSurface({ origin, dir });
+    if (!hit) return null;
+    if (!hit.building) return { point: hit.point, snapped: false }; // земля без прилипания (дороги позже)
+
+    const canvas = canvasRef().nativeElement;
+    const corner = snapToNearest({
+      candidates: buildingCorners(hit.building),
+      cursorWorld: hit.point,
+      viewProjection: viewProjection(),
+      width: canvas.clientWidth,
+      height: canvas.clientHeight,
+      threshold: SNAP_PIXEL_THRESHOLD,
+    });
+    return corner ? { point: corner, snapped: true } : { point: hit.point, snapped: false };
   };
 
   injectCanvasPointer({
@@ -76,8 +101,9 @@ export function injectMeasure({
     eyePoint,
     enabled,
     onClick: ({ origin, dir }) => {
-      const point = surfacePoint({ origin, dir });
-      if (!point) return; // клик в небо
+      const resolved = resolvePoint({ origin, dir });
+      if (!resolved) return; // клик в небо
+      const point = resolved.point;
 
       const first = pending();
       if (!first) {
@@ -92,8 +118,10 @@ export function injectMeasure({
       }
     },
     onMove: ({ origin, dir }) => {
+      const resolved = resolvePoint({ origin, dir });
+      snapPoint.set(resolved?.snapped ? resolved.point : null); // маркер залипания (даже до первого клика)
       if (!pending()) return; // резинка только между первой и второй точкой
-      cursorPoint.set(surfacePoint({ origin, dir })); // null в небе => резинка скрыта
+      cursorPoint.set(resolved ? resolved.point : null); // null в небе => резинка скрыта
     },
   });
 }
