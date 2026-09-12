@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { Measurement } from '../../inject/inject-measure';
+import { Measurement } from '../inject-measure';
 import { vec3 } from 'gl-matrix';
 
 @Component({

@@ -2,15 +2,15 @@ import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, sig
 import { InstanceData } from '../city/build-instance-data';
 import { vec3 } from 'gl-matrix';
 import { injectCanvasSize } from './inject-canvas-size';
-import { injectOrbitCamera } from './inject-orbit-camera';
-import { createViewProjectionMatrix } from '../helper/matrix/create-view-projection-matrix';
-import { BuildingRenderer, createBuildingRenderer } from '../helper/render/create-building-renderer';
-import { createSurfaceRenderer, SurfaceRenderer } from '../helper/render/create-surface-renderer';
+import { injectOrbitCamera } from '../camera/inject-orbit-camera';
+import { createViewProjectionMatrix } from '../shared/math/create-view-projection-matrix';
+import { BuildingRenderer, buildingRenderer } from './renderers/building-renderer';
+import { surfaceRenderer, SurfaceRenderer } from './renderers/surface-renderer';
 import { FlatGeometry } from '../road/build-road-geometry';
-import { createShadowRender, ShadowRender } from '../helper/render/create-shadow-render';
-import { createLightViewProjection } from '../helper/matrix/create-light-view-projection';
+import { ShadowRender, shadowRenderer } from './renderers/shadow-renderer';
+import { createLightViewProjection } from '../shared/math/create-light-view-projection';
 import { Building } from '../city/generate-city.types';
-import { createLineRenderer, LineRenderer, LineSegment } from '../helper/render/create-line-renderer';
+import { lineRenderer, LineRenderer, LineSegment } from './renderers/line-renderer';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -81,8 +81,8 @@ export function injectCityRender({
       gl.enable(gl.DEPTH_TEST);
       gl.clearColor(0.53, 0.7, 0.87, 1); // небесный фон
 
-      buildings = createBuildingRenderer({ gl, instanceData });
-      surface = createSurfaceRenderer({
+      buildings = buildingRenderer({ gl, instanceData });
+      surface = surfaceRenderer({
         gl,
         surfaces: [
           {
@@ -95,8 +95,8 @@ export function injectCityRender({
           },
         ],
       });
-      shadow = createShadowRender({ gl, instanceData, destroyRef, size: 4096 });
-      line = createLineRenderer({ gl });
+      shadow = shadowRenderer({ gl, instanceData, destroyRef, size: 4096 });
+      line = lineRenderer({ gl });
 
       destroyRef.onDestroy(() => {
         buildings?.dispose();

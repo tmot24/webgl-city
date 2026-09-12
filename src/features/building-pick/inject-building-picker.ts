@@ -1,8 +1,8 @@
 import { ElementRef, Signal, WritableSignal } from '@angular/core';
-import { Building } from '../city/generate-city.types';
+import { Building } from '../../city/generate-city.types';
 import { mat4, vec3 } from 'gl-matrix';
-import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
-import { injectCanvasPointer } from './inject-canvas-pointer';
+import { rayBoxDistance } from '../../shared/ray/ray-box-distance';
+import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
 
 interface InjectBuildingPicker {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;

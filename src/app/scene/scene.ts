@@ -1,22 +1,22 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, Signal, signal, viewChild } from '@angular/core';
 import { generateCity } from '../../city/generate-city';
 import { buildInstanceData } from '../../city/build-instance-data';
-import { injectCityRender } from '../../inject/inject-city-render';
-import { constructPlaneGeometry } from '../../helper/geometry/construct-plane-geometry';
+import { injectCityRender } from '../../render/inject-city-render';
+import { constructPlaneGeometry } from '../../shared/geometry/construct-plane-geometry';
 import { buildRoadGeometry } from '../../road/build-road-geometry';
 import { mat4, vec3 } from 'gl-matrix';
 import { Building } from '../../city/generate-city.types';
-import { injectBuildingPicker } from '../../inject/inject-building-picker';
-import { BuildingInfo } from '../building-info/building-info';
-import { ModeToolbar } from '../mode-toolbar/mode-toolbar';
-import { SceneMode } from '../mode-toolbar/scene-mode';
-import { injectMeasure, Measurement } from '../../inject/inject-measure';
-import { MeasureLog } from '../measure-log/measure-log';
-import { GroundBounds } from '../../helper/hit-box/intersect-ground';
-import { worldToScreen } from '../../helper/hit-box/world-to-screen';
-import { MeasureLabel, MeasureLabelData } from '../measure-label/measure-label';
-import { GROUND_MARGIN } from '../../helper/constants';
-import { SnapMarker } from '../snap-marker/snap-marker';
+import { injectBuildingPicker } from '../../features/building-pick/inject-building-picker';
+import { BuildingInfo } from '../../features/building-pick/building-info/building-info';
+import { ModeToolbar } from '../../features/mode/mode-toolbar/mode-toolbar';
+import { SceneMode } from '../../features/mode/scene-mode';
+import { injectMeasure, Measurement } from '../../features/measure/inject-measure';
+import { MeasureLog } from '../../features/measure/measure-log/measure-log';
+import { GroundBounds } from '../../shared/ray/intersect-ground';
+import { worldToScreen } from '../../shared/ray/world-to-screen';
+import { MeasureLabel, MeasureLabelData } from '../../features/measure/measure-label/measure-label';
+import { GROUND_MARGIN } from '../../shared/constants';
+import { SnapMarker } from '../../features/measure/snap-marker/snap-marker';
 
 @Component({
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker],

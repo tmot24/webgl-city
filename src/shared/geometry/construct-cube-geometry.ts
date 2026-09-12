@@ -1,4 +1,4 @@
-import { CUBE_FACE } from '../../data/cube-face';
+import { CUBE_FACE } from './cube-face';
 
 export interface ConstructCubeGeometry {
   position: Float32Array;

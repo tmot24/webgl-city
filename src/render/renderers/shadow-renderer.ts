@@ -1,14 +1,14 @@
 import { mat4 } from 'gl-matrix';
 import { InstanceData } from '../../city/build-instance-data';
 import { DestroyRef } from '@angular/core';
-import { constructCubeGeometry } from '../geometry/construct-cube-geometry';
-import { createGLProgram } from '../core/create-gl-program';
-import vertex from '../../material/shadow-depth-material/shadow-depth.vert';
-import fragment from '../../material/shadow-depth-material/shadow-depth.frag';
-import { createVAO } from '../mesh/create-vao';
-import { BUILDING_ATTRIBUTES_LOCATION } from '../../material/building-material/building-material';
-import { createShadowDepthMaterial } from '../../material/shadow-depth-material/shadow-depth-material';
-import { createFramebuffer } from '../core/create-framebuffer';
+import { constructCubeGeometry } from '../../shared/geometry/construct-cube-geometry';
+import { createGLProgram } from '../../shared/gl/create-gl-program';
+import vertex from '../material/shadow-depth-material/shadow-depth.vert';
+import fragment from '../material/shadow-depth-material/shadow-depth.frag';
+import { createVAO } from '../../shared/gl/create-vao';
+import { BUILDING_ATTRIBUTES_LOCATION } from '../material/building-material/building-material';
+import { createShadowDepthMaterial } from '../material/shadow-depth-material/shadow-depth-material';
+import { createFramebuffer } from '../../shared/gl/create-framebuffer';
 
 export interface ShadowRender {
   // Карта теней (depth-текстура)
@@ -28,7 +28,7 @@ export interface ShadowRender {
  * Здания - (пока) единственные, кто отбрасывает тень; земля/дороги только принимают.
  * Свой VAO (position/translation/scale) - рендерер самодостаточен; normal для глубины не нужен
  * */
-export function createShadowRender({
+export function shadowRenderer({
   gl,
   instanceData,
   destroyRef,

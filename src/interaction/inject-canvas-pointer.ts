@@ -1,7 +1,7 @@
 import { afterNextRender, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
-import { Ray, screenPointToRay } from '../helper/hit-box/screen-point-to-ray';
-import { CLICK_MOVE_THRESHOLD } from '../helper/constants';
+import { Ray, screenPointToRay } from '../shared/ray/screen-point-to-ray';
+import { CLICK_MOVE_THRESHOLD } from '../shared/constants';
 
 interface InjectCanvasPointer {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;

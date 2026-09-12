@@ -7,7 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { runAnimationFrame } from '../../helper/core/run-animation-frame';
+import { runAnimationFrame } from '../../shared/gl/run-animation-frame';
 
 @Component({
   imports: [],

@@ -1,7 +1,7 @@
 import { afterNextRender, computed, DestroyRef, ElementRef, inject, signal, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
-import { panHandler } from './helper/panHandler';
-import { rotateHandler } from './helper/rotateHandler';
+import { panHandler } from './handlers/pan-handler';
+import { rotateHandler } from './handlers/rotate-handler';
 
 interface InjectOrbitCamera {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;

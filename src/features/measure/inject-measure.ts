@@ -1,14 +1,14 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { ElementRef, Signal, WritableSignal } from '@angular/core';
-import { Building, RoadGrid } from '../city/generate-city.types';
-import { GroundBounds, intersectGround } from '../helper/hit-box/intersect-ground';
-import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
-import { injectCanvasPointer } from './inject-canvas-pointer';
-import { Ray } from '../helper/hit-box/screen-point-to-ray';
-import { snapToNearest } from '../helper/hit-box/snap-to-nearest';
-import { buildingCorners } from '../city/building-corners';
-import { SNAP_PIXEL_THRESHOLD } from '../helper/constants';
-import { roadSnapCandidates } from '../road/road-snap-candidates';
+import { Building, RoadGrid } from '../../city/generate-city.types';
+import { GroundBounds, intersectGround } from '../../shared/ray/intersect-ground';
+import { rayBoxDistance } from '../../shared/ray/ray-box-distance';
+import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
+import { Ray } from '../../shared/ray/screen-point-to-ray';
+import { snapToNearest } from '../../shared/ray/snap-to-nearest';
+import { buildingCorners } from '../../city/building-corners';
+import { SNAP_PIXEL_THRESHOLD } from '../../shared/constants';
+import { roadSnapCandidates } from '../../road/road-snap-candidates';
 
 export interface Measurement {
   id: number;

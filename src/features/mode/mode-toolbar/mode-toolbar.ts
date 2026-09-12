@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, model } from '@angular/core';
-import { SCENE_MODES, SceneMode } from './scene-mode';
+import { SCENE_MODES, SceneMode } from '../scene-mode';
 
 @Component({
   imports: [],

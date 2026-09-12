@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { ScreenPoint } from '../../helper/hit-box/world-to-screen';
+import { ScreenPoint } from '../../../shared/ray/world-to-screen';
 
 @Component({
   imports: [],

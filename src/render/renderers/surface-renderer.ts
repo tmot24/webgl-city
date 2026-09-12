@@ -1,15 +1,12 @@
-import vertex from '../../material/flat-color-material/flat-color-material.vert';
-import fragment from '../../material/flat-color-material/flat-color-material.frag';
+import vertex from '../material/flat-color-material/flat-color-material.vert';
+import fragment from '../material/flat-color-material/flat-color-material.frag';
 import { FlatGeometry } from '../../road/build-road-geometry';
 import { mat4, vec3 } from 'gl-matrix';
-import { createGLProgram } from '../core/create-gl-program';
-import {
-  createFlatColorMaterial,
-  FLAT_ATTRIBUTES_LOCATION,
-} from '../../material/flat-color-material/flat-color-material';
-import { createVAO } from '../mesh/create-vao';
-import { resolveShaderIncludes } from '../core/resolve-shader-includes';
-import { SHADER_CHUNKS } from '../../material/helper/shader-chunks';
+import { createGLProgram } from '../../shared/gl/create-gl-program';
+import { createFlatColorMaterial, FLAT_ATTRIBUTES_LOCATION } from '../material/flat-color-material/flat-color-material';
+import { createVAO } from '../../shared/gl/create-vao';
+import { resolveShaderIncludes } from '../../shared/gl/resolve-shader-includes';
+import { SHADER_CHUNKS } from '../material/shader-chunks/shader-chunks';
 
 export interface Surface {
   geometry: FlatGeometry;
@@ -21,7 +18,7 @@ export interface SurfaceRenderer {
   dispose: () => void;
 }
 
-export function createSurfaceRenderer({
+export function surfaceRenderer({
   gl,
   surfaces,
 }: {

@@ -1,10 +1,10 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { createGLProgram } from '../core/create-gl-program';
-import vertex from '../../material/line-material/line-material.vert';
-import fragment from '../../material/line-material/line-material.frag';
-import { createVAO } from '../mesh/create-vao';
-import { createLineMaterial, LINE_ATTRIBUTES_LOCATION } from '../../material/line-material/line-material';
-import { EPSILON } from '../constants';
+import { createGLProgram } from '../../shared/gl/create-gl-program';
+import vertex from '../material/line-material/line-material.vert';
+import fragment from '../material/line-material/line-material.frag';
+import { createVAO } from '../../shared/gl/create-vao';
+import { createLineMaterial, LINE_ATTRIBUTES_LOCATION } from '../material/line-material/line-material';
+import { EPSILON } from '../../shared/constants';
 
 export interface LineRenderer {
   draw: (frame: { viewProjection: mat4; eye: vec3; lineSegment: LineSegment | null }) => void;
@@ -25,7 +25,7 @@ const LINE_HALF_WIDTH_FACTOR = 0.001;
  * (перпендикуляр к линии, обращённый к камере), поверх всей сцены (без depth-теста).
  * Квад пересобирается каждый кадр из текущего измерения и позиции камеры.
  * */
-export function createLineRenderer({ gl }: { gl: WebGL2RenderingContext }): LineRenderer {
+export function lineRenderer({ gl }: { gl: WebGL2RenderingContext }): LineRenderer {
   const program = createGLProgram({ gl, vertex, fragment });
 
   const { vao, buffers } = createVAO({

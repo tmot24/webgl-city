@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { Building } from '../../city/generate-city.types';
+import { Building } from '../../../city/generate-city.types';
 
 @Component({
   imports: [],
