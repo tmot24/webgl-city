@@ -1,0 +1,27 @@
+.controls-hint {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  max-width: 400px;
+  pointer-events: none;
+}
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+li {
+  opacity: 0.9;
+  font-size: 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+li > b {
+  flex: 0 0 110px;
+}

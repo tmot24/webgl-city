@@ -8,7 +8,21 @@ body {
   overflow: hidden;
 }
 
-app-root {
-  display: block;
-  height: 100%;
+.ui-panel {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font:
+    24px/1.5 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  user-select: none;
+}
+.ui-panel__title {
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.ui-panel__hint {
+  opacity: 0.75;
 }

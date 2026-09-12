@@ -1,11 +1,5 @@
-<div class="panel">
-  <div class="title">Измерения</div>
-
-  @if (pending()) {
-    <div class="list">
-      <div class="item hint hint_pending">Первая точка поставлена - выберите вторую</div>
-    </div>
-  }
+<div class="ui-panel measure-log">
+  <div class="ui-panel__title">Измерения</div>
 
   @if (rows().length) {
     <ol class="list">
@@ -27,5 +21,7 @@
         </li>
       }
     </ol>
+  } @else {
+    <div class="ui-panel__hint">Выберите две точки</div>
   }
 </div>

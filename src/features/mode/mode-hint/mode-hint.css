@@ -1,0 +1,10 @@
+.mode-hint {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 360px;
+  text-align: center;
+  font-size: 12px;
+  pointer-events: none;
+}

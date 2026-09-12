@@ -17,9 +17,11 @@ import { worldToScreen } from '../../shared/ray/world-to-screen';
 import { MeasureLabel, MeasureLabelData } from '../../features/measure/measure-label/measure-label';
 import { GROUND_MARGIN } from '../../shared/constants';
 import { SnapMarker } from '../../features/measure/snap-marker/snap-marker';
+import { ControlHint } from '../control-hint/control-hint';
+import { ModeHint } from '../../features/mode/mode-hint/mode-hint';
 
 @Component({
-  imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker],
+  imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-scene',
   styleUrl: './scene.css',

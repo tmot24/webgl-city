@@ -11,7 +11,6 @@ import { vec3 } from 'gl-matrix';
 })
 export class MeasureLog {
   readonly measurements = input.required<Measurement[]>();
-  readonly pending = input<vec3 | null>();
   readonly selectedId = input<number | null>(null);
   // выбрать измерение
   readonly select = output<number>();
