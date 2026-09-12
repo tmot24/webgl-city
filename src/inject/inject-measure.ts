@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { ElementRef, Signal, WritableSignal } from '@angular/core';
-import { Building } from '../city/generate-city.types';
+import { Building, RoadGrid } from '../city/generate-city.types';
 import { GroundBounds, intersectGround } from '../helper/hit-box/intersect-ground';
 import { rayBoxDistance } from '../helper/hit-box/ray-box-distance';
 import { injectCanvasPointer } from './inject-canvas-pointer';
@@ -8,6 +8,7 @@ import { Ray } from '../helper/hit-box/screen-point-to-ray';
 import { snapToNearest } from '../helper/hit-box/snap-to-nearest';
 import { buildingCorners } from '../city/building-corners';
 import { SNAP_PIXEL_THRESHOLD } from '../helper/constants';
+import { roadSnapCandidates } from '../road/road-snap-candidates';
 
 export interface Measurement {
   id: number;
@@ -18,6 +19,7 @@ export interface Measurement {
 interface InjectMeasure {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
   buildings: Building[];
+  road: RoadGrid;
   viewProjection: () => mat4;
   eyePoint: Signal<vec3>;
   // завершённые измерения (пары точек)
@@ -39,6 +41,7 @@ interface InjectMeasure {
 export function injectMeasure({
   canvasRef,
   buildings,
+  road,
   viewProjection,
   eyePoint,
   measurements,
@@ -81,18 +84,20 @@ export function injectMeasure({
   const resolvePoint = ({ origin, dir }: Ray) => {
     const hit = hitSurface({ origin, dir });
     if (!hit) return null;
-    if (!hit.building) return { point: hit.point, snapped: false }; // земля без прилипания (дороги позже)
-
     const canvas = canvasRef().nativeElement;
-    const corner = snapToNearest({
-      candidates: buildingCorners(hit.building),
+    // навёл на дом => его 8 углов; навёл на землю => перекрёсток + его 4 угла
+    const candidates = hit.building ? buildingCorners(hit.building) : roadSnapCandidates({ road, point: hit.point });
+
+    const snapped = snapToNearest({
+      candidates,
       cursorWorld: hit.point,
       viewProjection: viewProjection(),
       width: canvas.clientWidth,
       height: canvas.clientHeight,
       threshold: SNAP_PIXEL_THRESHOLD,
     });
-    return corner ? { point: corner, snapped: true } : { point: hit.point, snapped: false };
+
+    return snapped ? { point: snapped, snapped: true } : { point: hit.point, snapped: false };
   };
 
   injectCanvasPointer({

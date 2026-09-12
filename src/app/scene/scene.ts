@@ -154,6 +154,7 @@ export class Scene {
     injectMeasure({
       canvasRef: this.canvasRef,
       buildings: city.buildings,
+      road: city.road,
       viewProjection,
       eyePoint,
       measurements: this.measurements,
