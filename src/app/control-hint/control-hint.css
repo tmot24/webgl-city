@@ -5,6 +5,11 @@
   max-width: 400px;
   pointer-events: none;
 }
+
+.title {
+  text-decoration: underline;
+}
+
 ul {
   margin: 0;
   padding: 0;
