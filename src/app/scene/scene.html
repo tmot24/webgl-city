@@ -24,5 +24,11 @@
     <app-snap-marker [position]="snapMarker()" />
   }
 
+  @if (activeMode() === 'route') {
+    <div class="ui-panel" style="position:absolute; right:8px; top:8px; pointer-events:none;">
+      A: {{ pointA() }} · B: {{ pointB() }} · узлов в пути: {{ route()?.length ?? 0 }}
+    </div>
+  }
+
   <ng-content />
 </div>

@@ -10,7 +10,7 @@ import { FlatGeometry } from '../city/road/build-road-geometry';
 import { createShadowRenderer, ShadowRender } from './renderers/create-shadow-renderer';
 import { createLightViewProjection } from '../shared/math/create-light-view-projection';
 import { Building } from '../city/generate-city.types';
-import { createLineRenderer, LineRenderer, LineSegment } from './renderers/create-line-renderer';
+import { createLineRenderer, LineRenderer } from './renderers/create-line-renderer';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -28,7 +28,7 @@ interface InjectCityRender {
   // радиус охватывающий сферы города - под ортобокс карты теней (уже не надо, но пока оставлю, мало ли понадобиться)
   sceneRadius: number;
   selectedBuilding: Signal<Building | null>;
-  activeLineSegment: Signal<LineSegment | null>;
+  activePolyline: Signal<vec3[] | null>;
   // подсветка выбранного здания
   isHighlightBuild: Signal<boolean>;
 }
@@ -45,7 +45,7 @@ export function injectCityRender({
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
   lightDirection,
   selectedBuilding,
-  activeLineSegment,
+  activePolyline,
   isHighlightBuild,
 }: InjectCityRender) {
   const size = injectCanvasSize({ canvasRef });
@@ -158,7 +158,7 @@ export function injectCityRender({
       selectedId,
     });
     // Измерительная линия - поверх всего
-    line.draw({ viewProjection: camera, eye: eyePoint(), lineSegment: activeLineSegment() });
+    line.draw({ viewProjection: camera, eye: eyePoint(), points: activePolyline() });
   }
 
   return { lightDirection, castShadows, viewProjection, eyePoint, size };

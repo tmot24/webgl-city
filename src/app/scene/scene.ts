@@ -29,6 +29,9 @@ import { SnapMarker } from '../../features/measure/snap-marker/snap-marker';
 import { ControlHint } from '../control-hint/control-hint';
 import { ModeHint } from '../../features/mode/mode-hint/mode-hint';
 import { isEditableTarget } from '../../shared/dom/is-editable-target';
+import { buildRoadGraph } from '../../city/road/build-road-graph';
+import { injectRoute } from '../../features/route/inject-route';
+import { RoadGraph } from '../../city/road/build-road-graph.type';
 
 @Component({
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint],
@@ -69,6 +72,18 @@ export class Scene {
     const chosen = selectedId !== null ? list.find(({ id }) => id === selectedId) : undefined;
     return chosen ? { a: chosen.a, b: chosen.b } : null;
   });
+  protected readonly activePolyline = computed<vec3[] | null>(() => {
+    const mode = this.activeMode();
+    if (mode === 'measure') {
+      const segment = this.activeLineSegment();
+      return segment ? [segment.a, segment.b] : null;
+    }
+    if (mode === 'route') {
+      const ids = this.route();
+      return ids ? ids.map((id) => this.graph.nodes[id].position) : null;
+    }
+    return null;
+  });
   // Экранная позиция подписи над серединой активного отрезка + текст длины
   protected readonly measureLabel = computed((): MeasureLabelData | null => {
     const segment = this.activeLineSegment();
@@ -106,6 +121,12 @@ export class Scene {
     });
   });
 
+  // Маршрут: A и B как id узлов графа + найденный путь (список id)
+  protected readonly pointA = signal<number | null>(null);
+  protected readonly pointB = signal<number | null>(null);
+  protected readonly route = signal<number[] | null>(null);
+  private graph!: RoadGraph;
+
   constructor() {
     const city = generateCity({ seed: 1 });
     const instanceData = buildInstanceData({ buildings: city.buildings });
@@ -139,7 +160,7 @@ export class Scene {
       instanceData,
       sceneRadius,
       selectedBuilding: this.selectedBuilding,
-      activeLineSegment: this.activeLineSegment,
+      activePolyline: this.activePolyline,
       ground: {
         groundGeometry,
         groundColor: vec3.fromValues(0.36, 0.55, 0.32),
@@ -177,6 +198,19 @@ export class Scene {
       groundBounds,
       enabled: computed(() => this.activeMode() === 'measure'),
     });
+
+    this.graph = buildRoadGraph({ road: city.road });
+    injectRoute({
+      canvasRef: this.canvasRef,
+      viewProjection,
+      eyePoint,
+      graph: this.graph,
+      groundBounds,
+      pointA: this.pointA,
+      pointB: this.pointB,
+      route: this.route,
+      enabled: computed(() => this.activeMode() === 'route'),
+    });
   }
 
   protected removeMeasurement(id: number) {
@@ -195,6 +229,10 @@ export class Scene {
       this.selectedMeasurementId.set(null);
     } else if (this.activeMode() === 'building') {
       this.selectedBuilding.set(null);
+    } else if (this.activeMode() === 'route') {
+      this.pointA.set(null);
+      this.pointB.set(null);
+      this.route.set(null);
     }
   }
 }

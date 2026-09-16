@@ -1,4 +1,4 @@
-export type SceneMode = 'building' | 'measure';
+export type SceneMode = 'building' | 'measure' | 'route';
 
 export interface SceneModeOption {
   id: SceneMode;
@@ -8,6 +8,7 @@ export interface SceneModeOption {
 export const SCENE_MODES: SceneModeOption[] = [
   { id: 'building', label: 'Выбор здания' },
   { id: 'measure', label: 'Измерение' },
+  { id: 'route', label: 'Маршрут' },
 ];
 
 export const MODE_HINTS: Record<SceneMode, string> = {
@@ -19,4 +20,7 @@ export const MODE_HINTS: Record<SceneMode, string> = {
     'Точки прилипают к углам зданий и перекрёсткам (жёлтый кружок). ' +
     'Esc отменит первую точку и выбранное измерение. ' +
     'Справа измерение можно выбрать кликом или удалить крестиком.',
+  route:
+    'Кликните левой кнопкой две точки на дорогах - построится кратчайший маршрут между ближайшими перекрёстками. ' +
+    'Третий клик начинает новый маршрут, Esc сбрасывает',
 };

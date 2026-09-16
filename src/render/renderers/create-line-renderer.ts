@@ -4,26 +4,18 @@ import vertex from '../material/line-material/line-material.vert';
 import fragment from '../material/line-material/line-material.frag';
 import { createVAO } from '../../shared/gl/create-vao';
 import { createLineMaterial, LINE_ATTRIBUTES_LOCATION } from '../material/line-material/line-material';
-import { EPSILON } from '../../shared/constants';
+import { EPSILON, FLOATS_PER_SEGMENT, LINE_COLOR, LINE_HALF_WIDTH_FACTOR } from '../../shared/constants';
 
 export interface LineRenderer {
-  draw: (frame: { viewProjection: mat4; eye: vec3; lineSegment: LineSegment | null }) => void;
+  // points - ломаная (N точек => N-1 сегментов)
+  draw: (frame: { viewProjection: mat4; eye: vec3; points: vec3[] | null }) => void;
   dispose: () => void;
 }
 
-export interface LineSegment {
-  a: vec3;
-  b: vec3;
-}
-
-const LINE_COLOR = vec3.fromValues(1.0, 0.75, 0.1);
-// Полутолщина = factor * расстояние до камеры => на экране толщина почти постоянна на любом зуме
-const LINE_HALF_WIDTH_FACTOR = 0.001;
-
 /**
- * Рендер измерительной линии: отрезок a->b рисуется билборд-прямоугольником
- * (перпендикуляр к линии, обращённый к камере), поверх всей сцены (без depth-теста).
- * Квад пересобирается каждый кадр из текущего измерения и позиции камеры.
+ * Рендер ломаной (маршрут/измерение) билборд-прямоугольниками: каждый сегмент -
+ * прямоугольник, повёрнутый к камере, толщина масштабируется расстоянием. Поверх всего (без depth).
+ * Вершины пересобираются каждый кадр; буфер растёт под самую длинную ломаную.
  * */
 export function createLineRenderer({ gl }: { gl: WebGL2RenderingContext }): LineRenderer {
   const program = createGLProgram({ gl, vertex, fragment });
@@ -33,7 +25,7 @@ export function createLineRenderer({ gl }: { gl: WebGL2RenderingContext }): Line
     attributes: [
       {
         location: LINE_ATTRIBUTES_LOCATION.position,
-        srcData: new Float32Array(12), // заглушка, перезаписывается в draw
+        srcData: new Float32Array(FLOATS_PER_SEGMENT), // старт на 1 сегмент, дальше растём
         size: 3,
         usage: gl.DYNAMIC_DRAW,
       },
@@ -44,47 +36,73 @@ export function createLineRenderer({ gl }: { gl: WebGL2RenderingContext }): Line
   gl.useProgram(program);
   const material = createLineMaterial({ gl, program });
 
-  const quad = new Float32Array(12); // переиспользуемый CPU-буфер вершин
+  let vertices = new Float32Array(FLOATS_PER_SEGMENT); // CPU-буфер, только растёт
+  let gpuCapacity = FLOATS_PER_SEGMENT; // сколько float влезает в GPU-буфер сейчас
 
-  const draw: LineRenderer['draw'] = ({ viewProjection, eye, lineSegment }) => {
-    if (!lineSegment) return;
-    const { a, b } = lineSegment;
+  // переиспользуемые временные векторы (без аллокаций в цикле)
+  const mid = vec3.create();
+  const toCamera = vec3.create();
+  const viewDir = vec3.create();
+  const lineDir = vec3.create();
+  const side = vec3.create();
 
-    // Билборд: боковой вектор = перпендикуляр к линии и к направлению на камеру
-    const mid = vec3.lerp(vec3.create(), a, b, 0.5); // lerp - линейная интерполяция между двумя векторами
-    const toCamera = vec3.subtract(vec3.create(), eye, mid);
-    const distance = vec3.length(toCamera);
-    const viewDir = vec3.scale(vec3.create(), toCamera, 1 / distance);
-    const lineDir = vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), b, a));
+  const draw: LineRenderer['draw'] = ({ viewProjection, eye, points }) => {
+    if (!points || points.length < 2) return;
 
-    const side = vec3.cross(vec3.create(), lineDir, viewDir);
-    const sideLen = vec3.length(side);
-    if (sideLen < EPSILON) return; // линия смотрит прямо в камеру - квад вырожден, пропускаем кадр
-    vec3.scale(side, side, (LINE_HALF_WIDTH_FACTOR * distance) / sideLen); // нормализуем + толщина
+    const segments = points.length - 1;
+    const floats = segments * FLOATS_PER_SEGMENT;
+    if (vertices.length < floats) {
+      vertices = new Float32Array(floats);
+    }
 
-    // 4 вершины прямоугольника (TRIANGLE_STRIP): a+side, a-side, b+side, b-side
-    quad[0] = a[0] + side[0];
-    quad[1] = a[1] + side[1];
-    quad[2] = a[2] + side[2];
-    quad[3] = a[0] - side[0];
-    quad[4] = a[1] - side[1];
-    quad[5] = a[2] - side[2];
-    quad[6] = b[0] + side[0];
-    quad[7] = b[1] + side[1];
-    quad[8] = b[2] + side[2];
-    quad[9] = b[0] - side[0];
-    quad[10] = b[1] - side[1];
-    quad[11] = b[2] - side[2];
+    let o = 0;
+    const put = ({ x, y, z }: { x: number; y: number; z: number }) => {
+      vertices[o++] = x;
+      vertices[o++] = y;
+      vertices[o++] = z;
+    };
+
+    for (let k = 0; k < segments; k++) {
+      const a = points[k];
+      const b = points[k + 1];
+
+      // Билборд-side для этого сегмента (перпендикуляр к линии и к направлению на камеру)
+      vec3.lerp(mid, a, b, 0.5);
+      vec3.subtract(toCamera, eye, mid);
+      const distance = vec3.length(toCamera);
+      vec3.scale(viewDir, toCamera, 1 / distance);
+      vec3.normalize(lineDir, vec3.subtract(lineDir, b, a));
+      vec3.cross(side, lineDir, viewDir);
+      const sideLen = vec3.length(side);
+      if (sideLen < EPSILON) {
+        vec3.set(side, 0, 0, 0); // сегмент смотрит в камеру (схлопнутый квад не рисуется)
+      } else {
+        vec3.scale(side, side, (LINE_HALF_WIDTH_FACTOR * distance) / sideLen);
+      }
+
+      // Два треугольника прямоугольника: (a+side, a-side, b-side) и (a+side, b-side, b+side)
+      put({ x: a[0] + side[0], y: a[1] + side[1], z: a[2] + side[2] });
+      put({ x: a[0] - side[0], y: a[1] - side[1], z: a[2] - side[2] });
+      put({ x: b[0] - side[0], y: b[1] - side[1], z: b[2] - side[2] });
+      put({ x: a[0] + side[0], y: a[1] + side[1], z: a[2] + side[2] });
+      put({ x: b[0] - side[0], y: b[1] - side[1], z: b[2] - side[2] });
+      put({ x: b[0] + side[0], y: b[1] + side[1], z: b[2] + side[2] });
+    }
 
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, quad);
+    if (gpuCapacity < vertices.length) {
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW); // выросли - перевыделяем GPU-буфер
+      gpuCapacity = vertices.length;
+    } else {
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices, 0, floats);
+    }
 
     gl.useProgram(program);
     gl.bindVertexArray(vao);
     material.updatePerFrame({ viewProjection, color: LINE_COLOR });
 
-    gl.disable(gl.DEPTH_TEST); // поверх всего - измерительный инструмент
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    gl.disable(gl.DEPTH_TEST); // поверх всего
+    gl.drawArrays(gl.TRIANGLES, 0, segments * 6);
     gl.enable(gl.DEPTH_TEST); // вернуть для остального рендера
 
     gl.bindVertexArray(null);
