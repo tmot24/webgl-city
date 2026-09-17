@@ -49,7 +49,7 @@ export function findPath({ graph, start, goal }: FindPath): number[] | null {
 function reconstruct({ cameFrom, goal }: { cameFrom: Map<number, number>; goal: number }): number[] {
   const path = [goal];
   let current = goal;
-  while (cameFrom.get(current)) {
+  while (cameFrom.has(current)) {
     current = cameFrom.get(current)!;
     path.push(current);
   }

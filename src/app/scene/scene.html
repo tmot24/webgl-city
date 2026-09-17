@@ -7,7 +7,7 @@
 <div class="scene__overlay">
   <app-control-hint />
 
-  <app-mode-toolbar [(mode)]="activeMode" />
+  <app-mode-toolbar [mode]="activeMode()" (modeChange)="activeMode.set($event)" /> />
   <app-mode-hint [mode]="activeMode()" />
 
   @if (activeMode() === 'building') {
@@ -25,10 +25,7 @@
   }
 
   @if (activeMode() === 'route') {
-    <div class="ui-panel" style="position:absolute; right:8px; top:8px; pointer-events:none;">
-      A: {{ pointA() }} · B: {{ pointB() }} · узлов в пути: {{ route()?.length ?? 0 }}
-    </div>
+    <app-route-panel [info]="routeInfo()" [awaitingSecond]="awaitingSecond()" (reset)="resetRoute()" />
   }
-
   <ng-content />
 </div>

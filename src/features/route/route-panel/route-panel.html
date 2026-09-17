@@ -1,0 +1,17 @@
+<div class="ui-panel route-panel">
+  <div class="ui-panel__title">Маршрут</div>
+
+  @if (info(); as route) {
+    <dl>
+      <dt>Длина</dt>
+      <dd>{{ route.length }}</dd>
+      <dt>Перекрёстков</dt>
+      <dd>{{ route.crossings }}</dd>
+    </dl>
+    <button class="route-panel__reset" type="button" (click)="reset.emit()">Сбросить</button>
+  } @else if (awaitingSecond()) {
+    <div class="ui-panel__hint">Выберите конечную точку</div>
+  } @else {
+    <div class="ui-panel__hint">Выберите 2 точки</div>
+  }
+</div>

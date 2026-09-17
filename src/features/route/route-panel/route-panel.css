@@ -1,0 +1,36 @@
+.route-panel {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  pointer-events: auto;
+  width: 210px;
+
+  dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 12px;
+    margin: 0 0 8px;
+  }
+  dt {
+    opacity: 0.7;
+  }
+  dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .route-panel__reset {
+    width: 100%;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+  }
+  .route-panel__reset:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}

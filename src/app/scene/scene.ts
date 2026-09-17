@@ -32,9 +32,10 @@ import { isEditableTarget } from '../../shared/dom/is-editable-target';
 import { buildRoadGraph } from '../../city/road/build-road-graph';
 import { injectRoute } from '../../features/route/inject-route';
 import { RoadGraph } from '../../city/road/build-road-graph.type';
+import { RoutePanel } from '../../features/route/route-panel/route-panel';
 
 @Component({
-  imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint],
+  imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint, RoutePanel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-scene',
   styleUrl: './scene.css',
@@ -125,7 +126,17 @@ export class Scene {
   protected readonly pointA = signal<number | null>(null);
   protected readonly pointB = signal<number | null>(null);
   protected readonly route = signal<number[] | null>(null);
-  private graph!: RoadGraph;
+  private readonly graph!: RoadGraph;
+  protected readonly routeInfo = computed(() => {
+    const ids = this.route();
+    if (!ids || ids.length === 0) return null;
+    let length = 0;
+    for (let k = 0; k < ids.length - 1; k++) {
+      length += vec3.distance(this.graph.nodes[ids[k]].position, this.graph.nodes[ids[k + 1]].position);
+    }
+    return { length: length.toFixed(0), crossings: ids.length };
+  });
+  protected readonly awaitingSecond = computed(() => this.pointA() !== null && this.route() === null);
 
   constructor() {
     const city = generateCity({ seed: 1 });
@@ -217,6 +228,12 @@ export class Scene {
     this.measurements.update((list) => list.filter((measurement) => measurement.id !== id));
   }
 
+  protected resetRoute() {
+    this.pointA.set(null);
+    this.pointB.set(null);
+    this.route.set(null);
+  }
+
   // Esc сбрасывает текущее действие режима
   @HostListener('window:keydown.escape', ['$event'])
   protected onEscape(event: Event) {
@@ -230,9 +247,7 @@ export class Scene {
     } else if (this.activeMode() === 'building') {
       this.selectedBuilding.set(null);
     } else if (this.activeMode() === 'route') {
-      this.pointA.set(null);
-      this.pointB.set(null);
-      this.route.set(null);
+      this.resetRoute();
     }
   }
 }
