@@ -7,7 +7,7 @@
 <div class="scene__overlay">
   <app-control-hint />
 
-  <app-mode-toolbar [mode]="activeMode()" (modeChange)="activeMode.set($event)" /> />
+  <app-mode-toolbar [mode]="activeMode()" (modeChange)="activeMode.set($event)" />
   <app-mode-hint [mode]="activeMode()" />
 
   @if (activeMode() === 'building') {
