@@ -39,7 +39,7 @@ export function generateCity({
         for (let pz = 0; pz < plotsPerAxis; pz++) {
           if (rng.chance(emptyChance)) continue; // пустой участок для разнообразия
 
-          // Центр участка
+          // Центр участка (со смещением в половину здания 0.5)
           const cx = x0 + (px + 0.5) * plotSize;
           const cz = z0 + (pz + 0.5) * plotSize;
 

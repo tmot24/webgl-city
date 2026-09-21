@@ -38,11 +38,11 @@ export function injectRoute({
     viewProjection,
     eyePoint,
     enabled,
-    onClick: ({ origin, dir }) => {
-      const point = intersectGround({ origin, dir, bounds: groundBounds });
-      if (!point) return; // клик мимо земли
+    onClick: ({ origin, dirNorm }) => {
+      const groundPoint = intersectGround({ origin, dirNorm: dirNorm, bounds: groundBounds });
+      if (!groundPoint) return; // клик мимо земли
 
-      const node = nearestNode({ graph, point });
+      const node = nearestNode({ graph, point: groundPoint.point });
       const start = pointA();
 
       if (start === null || pointB() !== null) {
@@ -54,7 +54,7 @@ export function injectRoute({
 
       // A есть, B нет => это B: стром маршрут A* между ними
       pointB.set(node);
-      route.set(findPath({ graph, start, goal: node }));
+      route.set(findPath({ graph, start, finish: node }));
     },
   });
 }

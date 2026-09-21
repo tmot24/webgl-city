@@ -1,6 +1,6 @@
 import vertex from '../material/flat-color-material/flat-color-material.vert';
 import fragment from '../material/flat-color-material/flat-color-material.frag';
-import { FlatGeometry } from '../../city/road/build-road-geometry';
+import { FlatGeometry } from '../../city/road/construct-road-geometry';
 import { mat4, vec3 } from 'gl-matrix';
 import { createGLProgram } from '../../shared/gl/create-gl-program';
 import { createFlatColorMaterial, FLAT_ATTRIBUTES_LOCATION } from '../material/flat-color-material/flat-color-material';
@@ -31,7 +31,6 @@ export function createSurfaceRenderer({
     fragment: resolveShaderIncludes({ source: fragment, chunks: SHADER_CHUNKS }),
   });
   gl.useProgram(program);
-  const material = createFlatColorMaterial({ gl, program });
 
   // Каждой поверхности свой VAO (position) + цвет и число индексов
   const items = surfaces.map(({ geometry, color }) => {
@@ -48,6 +47,8 @@ export function createSurfaceRenderer({
     });
     return { vao, buffers, indexBuffer, count: geometry.count, color };
   });
+
+  const material = createFlatColorMaterial({ gl, program });
 
   const draw: SurfaceRenderer['draw'] = ({ viewProjection, lightViewProjection }) => {
     gl.useProgram(program);

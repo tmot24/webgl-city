@@ -1,7 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { InstanceData } from '../../city/build-instance-data';
 import { DestroyRef } from '@angular/core';
-import { constructCubeGeometry } from '../../shared/geometry/construct-cube-geometry';
+import { ConstructCubeGeometry } from '../../shared/geometry/construct-cube-geometry';
 import { createGLProgram } from '../../shared/gl/create-gl-program';
 import vertex from '../material/shadow-depth-material/shadow-depth.vert';
 import fragment from '../material/shadow-depth-material/shadow-depth.frag';
@@ -25,21 +25,22 @@ export interface ShadowRender {
 
 /**
  * Проход глубины теней: рисует глубину зданий из "взгляда солнца" в depth-текстуру.
- * Здания - (пока) единственные, кто отбрасывает тень; земля/дороги только принимают.
+ * Здания - единственные, кто отбрасывает тень; земля/дороги только принимают.
  * Свой VAO (position/translation/scale) - рендерер самодостаточен; normal для глубины не нужен
  * */
 export function createShadowRenderer({
   gl,
   instanceData,
+  cubeGeometry,
   destroyRef,
   size,
 }: {
   gl: WebGL2RenderingContext;
   instanceData: InstanceData;
+  cubeGeometry: ConstructCubeGeometry;
   destroyRef: DestroyRef;
   size: number;
 }): ShadowRender {
-  const geometry = constructCubeGeometry();
   const program = createGLProgram({
     gl,
     vertex,
@@ -51,7 +52,7 @@ export function createShadowRenderer({
     attributes: [
       {
         location: BUILDING_ATTRIBUTES_LOCATION.position,
-        srcData: geometry.position,
+        srcData: cubeGeometry.position,
         size: 3,
       },
       // per-instance: divisor 1 (одно значение на здание)
@@ -68,7 +69,7 @@ export function createShadowRenderer({
         divisor: 1,
       },
     ],
-    indices: { srcData: geometry.indices },
+    indices: { srcData: cubeGeometry.indices },
   });
 
   gl.useProgram(program);
@@ -100,7 +101,7 @@ export function createShadowRenderer({
     gl.bindVertexArray(vao);
     material.updatePerFrame({ lightViewProjection });
     // Один вызов на весь город - как и в основном проходе
-    gl.drawElementsInstanced(gl.TRIANGLES, geometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
+    gl.drawElementsInstanced(gl.TRIANGLES, cubeGeometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
     gl.bindVertexArray(null);
 
     // Возвращаю состояние: основной проход рисует без отсечения

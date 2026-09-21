@@ -1,38 +1,21 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  ElementRef,
-  HostListener,
-  Signal,
-  signal,
-  viewChild,
-} from '@angular/core';
-import { generateCity } from '../../city/generate-city';
-import { buildInstanceData } from '../../city/build-instance-data';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, signal, viewChild } from '@angular/core';
 import { injectCityRender } from '../../render/inject-city-render';
-import { constructPlaneGeometry } from '../../shared/geometry/construct-plane-geometry';
-import { buildRoadGeometry } from '../../city/road/build-road-geometry';
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 import { Building } from '../../city/generate-city.types';
 import { injectBuildingPicker } from '../../features/building-pick/inject-building-picker';
 import { BuildingInfo } from '../../features/building-pick/building-info/building-info';
 import { ModeToolbar } from '../../features/mode/mode-toolbar/mode-toolbar';
 import { SceneMode } from '../../features/mode/scene-mode';
-import { injectMeasure, Measurement } from '../../features/measure/inject-measure';
 import { MeasureLog } from '../../features/measure/measure-log/measure-log';
-import { GroundBounds } from '../../shared/ray/intersect-ground';
-import { worldToScreen } from '../../shared/ray/world-to-screen';
-import { MeasureLabel, MeasureLabelData } from '../../features/measure/measure-label/measure-label';
-import { GROUND_MARGIN } from '../../shared/constants';
+import { MeasureLabel } from '../../features/measure/measure-label/measure-label';
 import { SnapMarker } from '../../features/measure/snap-marker/snap-marker';
 import { ControlHint } from '../control-hint/control-hint';
 import { ModeHint } from '../../features/mode/mode-hint/mode-hint';
 import { isEditableTarget } from '../../shared/dom/is-editable-target';
-import { buildRoadGraph } from '../../city/road/build-road-graph';
-import { injectRoute } from '../../features/route/inject-route';
-import { RoadGraph } from '../../city/road/build-road-graph.type';
 import { RoutePanel } from '../../features/route/route-panel/route-panel';
+import { buildCityScene } from '../../city/build-city-scene';
+import { injectMeasureState, MeasureState } from '../../features/measure/inject-measure-state';
+import { injectRouteState, RouteState } from '../../features/route/inject-route-state';
 
 @Component({
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint, RoutePanel],
@@ -40,136 +23,41 @@ import { RoutePanel } from '../../features/route/route-panel/route-panel';
   selector: 'app-scene',
   styleUrl: './scene.css',
   templateUrl: './scene.html',
+  host: { '(window:keydown.escape)': 'onEscape($event)' },
 })
 export class Scene {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
 
-  // Камера рендера - нужна для проекции подписи 3D на экран
-  private viewProjection!: () => mat4;
-  private viewportSize!: Signal<{ width: number; height: number }>;
   readonly lightDirection = signal(vec3.normalize(vec3.create(), vec3.fromValues(0.6, 1.0, 0.4)));
 
   protected readonly activeMode = signal<SceneMode>('building');
-
-  // mode - building
+  // building
   protected readonly selectedBuilding = signal<Building | null>(null);
-  // mode - measure
-  protected readonly measurements = signal<Measurement[]>([]);
-  protected readonly pendingPoint = signal<vec3 | null>(null);
-  protected readonly cursorPoint = signal<vec3 | null>(null);
-  // точка залипания
-  protected readonly snapPoint = signal<vec3 | null>(null);
-  // id выбранного в логе измерения
-  protected readonly selectedMeasurementId = signal<number | null>(null);
-  protected readonly activeLineSegment = computed(() => {
-    if (this.activeMode() !== 'measure') return null;
-    const start = this.pendingPoint();
-    if (start) {
-      const cursor = this.cursorPoint();
-      return cursor ? { a: start, b: cursor } : null;
-    }
-    const list = this.measurements();
-    const selectedId = this.selectedMeasurementId();
-    const chosen = selectedId !== null ? list.find(({ id }) => id === selectedId) : undefined;
-    return chosen ? { a: chosen.a, b: chosen.b } : null;
-  });
-  protected readonly activePolyline = computed<vec3[] | null>(() => {
+  // measure
+  protected readonly measureState!: MeasureState;
+  // route
+  protected readonly routeState!: RouteState;
+
+  protected readonly activePolyline = computed(() => {
     const mode = this.activeMode();
     if (mode === 'measure') {
-      const segment = this.activeLineSegment();
+      const segment = this.measureState.segment();
       return segment ? [segment.a, segment.b] : null;
     }
     if (mode === 'route') {
-      const ids = this.route();
-      return ids ? ids.map((id) => this.graph.nodes[id].position) : null;
+      const ids = this.routeState.route();
+      return ids ? ids.map((id) => this.routeState.graph.nodes[id].position) : null;
     }
     return null;
   });
-  // Экранная позиция подписи над серединой активного отрезка + текст длины
-  protected readonly measureLabel = computed((): MeasureLabelData | null => {
-    const segment = this.activeLineSegment();
-    if (!segment) return null;
-    this.viewportSize(); // зависимость: пересчёт при ресйзе (значение из clientWidth)
-
-    const canvas = this.canvasRef().nativeElement;
-    const mid = vec3.lerp(vec3.create(), segment.a, segment.b, 0.5);
-    const screen = worldToScreen({
-      point: mid,
-      viewProjection: this.viewProjection(),
-      width: canvas.clientWidth,
-      height: canvas.clientHeight,
-    });
-    if (!screen) return null; // точка за камерой
-
-    const length = vec3.distance(segment.a, segment.b);
-    return {
-      x: screen.x,
-      y: screen.y,
-      text: `${length.toFixed(2)} м`,
-    };
-  });
-  protected readonly snapMarker = computed(() => {
-    const point = this.snapPoint();
-    if (!point) return null;
-    this.viewportSize(); // зависимость: пересчёт при ресайзе
-
-    const canvas = this.canvasRef().nativeElement;
-    return worldToScreen({
-      point,
-      viewProjection: this.viewProjection(),
-      width: canvas.clientWidth,
-      height: canvas.clientHeight,
-    });
-  });
-
-  // Маршрут: A и B как id узлов графа + найденный путь (список id)
-  protected readonly pointA = signal<number | null>(null);
-  protected readonly pointB = signal<number | null>(null);
-  protected readonly route = signal<number[] | null>(null);
-  private readonly graph!: RoadGraph;
-  protected readonly routeInfo = computed(() => {
-    const ids = this.route();
-    if (!ids || ids.length === 0) return null;
-    let length = 0;
-    for (let k = 0; k < ids.length - 1; k++) {
-      length += vec3.distance(this.graph.nodes[ids[k]].position, this.graph.nodes[ids[k + 1]].position);
-    }
-    return { length: length.toFixed(0), crossings: ids.length };
-  });
-  protected readonly awaitingSecond = computed(() => this.pointA() !== null && this.route() === null);
 
   constructor() {
-    const city = generateCity({ seed: 1 });
-    const instanceData = buildInstanceData({ buildings: city.buildings });
-
-    const { bounds } = city;
-    const groundWidth = bounds.maxX - bounds.minX + GROUND_MARGIN * 2;
-    const groundDepth = bounds.maxZ - bounds.minZ + GROUND_MARGIN * 2;
-    const groundGeometry = constructPlaneGeometry({
-      width: groundWidth,
-      depth: groundDepth,
-    });
-    const groundBounds: GroundBounds = {
-      minX: -groundWidth / 2,
-      maxX: groundWidth / 2,
-      minZ: -groundDepth / 2,
-      maxZ: groundDepth / 2,
-    };
-    const roadGeometry = buildRoadGeometry({
-      road: city.road,
-      bounds,
-    });
-
-    // Радиус охватывающей сферы города (от центра-начала координат до дальнего верхнего угла):
-    // задаёт размер ортобокса карты теней
-    const maxHeight = city.buildings.reduce((max, { height }) => Math.max(max, height), 0);
-    const sceneRadius = Math.hypot(bounds.maxX, maxHeight, bounds.maxZ);
+    const { city, instanceData, groundBounds, groundGeometry, roadGeometry, buildingBoxes } = buildCityScene();
 
     const { viewProjection, eyePoint, size } = injectCityRender({
       canvasRef: this.canvasRef,
       lightDirection: this.lightDirection,
       instanceData,
-      sceneRadius,
       selectedBuilding: this.selectedBuilding,
       activePolyline: this.activePolyline,
       ground: {
@@ -183,71 +71,46 @@ export class Scene {
       isHighlightBuild: computed(() => this.activeMode() === 'building'),
     });
 
-    this.viewProjection = viewProjection;
-    this.viewportSize = size;
-
     injectBuildingPicker({
       canvasRef: this.canvasRef,
-      buildings: city.buildings,
+      buildingBoxes,
       viewProjection,
       eyePoint,
       selected: this.selectedBuilding,
       enabled: computed(() => this.activeMode() === 'building'),
     });
 
-    injectMeasure({
+    this.measureState = injectMeasureState({
       canvasRef: this.canvasRef,
-      buildings: city.buildings,
+      buildingBoxes,
       road: city.road,
       viewProjection,
       eyePoint,
-      measurements: this.measurements,
-      pending: this.pendingPoint,
-      cursorPoint: this.cursorPoint,
-      snapPoint: this.snapPoint,
-      selectedMeasurementId: this.selectedMeasurementId,
       groundBounds,
+      viewportSize: size,
       enabled: computed(() => this.activeMode() === 'measure'),
     });
 
-    this.graph = buildRoadGraph({ road: city.road });
-    injectRoute({
+    this.routeState = injectRouteState({
       canvasRef: this.canvasRef,
       viewProjection,
       eyePoint,
-      graph: this.graph,
+      road: city.road,
       groundBounds,
-      pointA: this.pointA,
-      pointB: this.pointB,
-      route: this.route,
       enabled: computed(() => this.activeMode() === 'route'),
     });
   }
 
-  protected removeMeasurement(id: number) {
-    this.measurements.update((list) => list.filter((measurement) => measurement.id !== id));
-  }
-
-  protected resetRoute() {
-    this.pointA.set(null);
-    this.pointB.set(null);
-    this.route.set(null);
-  }
-
   // Esc сбрасывает текущее действие режима
-  @HostListener('window:keydown.escape', ['$event'])
   protected onEscape(event: Event) {
     if (isEditableTarget(event.target)) return;
 
-    if (this.activeMode() === 'measure') {
-      this.pendingPoint.set(null);
-      this.cursorPoint.set(null);
-      this.snapPoint.set(null);
-      this.selectedMeasurementId.set(null);
-    } else if (this.activeMode() === 'building') {
+    if (this.activeMode() === 'building') {
       this.selectedBuilding.set(null);
+    } else if (this.activeMode() === 'measure') {
+      this.measureState.reset();
     } else if (this.activeMode() === 'route') {
-      this.resetRoute();
+      this.routeState.reset();
     }
   }
 }

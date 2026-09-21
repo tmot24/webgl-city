@@ -15,17 +15,21 @@
   }
   @if (activeMode() === 'measure') {
     <app-measure-log
-      [measurements]="measurements()"
-      [selectedId]="selectedMeasurementId()"
-      (select)="selectedMeasurementId.set($event)"
-      (remove)="removeMeasurement($event)"
+      [measurements]="measureState.measurements()"
+      [selectedId]="measureState.selectedMeasurementId()"
+      (select)="measureState.selectedMeasurementId.set($event)"
+      (remove)="measureState.remove({ id: $event })"
     />
-    <app-measure-label [label]="measureLabel()" />
-    <app-snap-marker [position]="snapMarker()" />
+    <app-measure-label [label]="measureState.label()" />
+    <app-snap-marker [position]="measureState.snapMarker()" />
   }
 
   @if (activeMode() === 'route') {
-    <app-route-panel [info]="routeInfo()" [awaitingSecond]="awaitingSecond()" (reset)="resetRoute()" />
+    <app-route-panel
+      [info]="routeState.routeInfo()"
+      [awaitingSecond]="routeState.awaitingSecond()"
+      (reset)="routeState.reset()"
+    />
   }
   <ng-content />
 </div>

@@ -7,7 +7,7 @@ export interface FlatGeometry {
   count: number;
 }
 
-interface BuildGeometryParams {
+interface ConstructGeometryParams {
   road: RoadGrid;
   bounds: CityBounds;
 }
@@ -18,7 +18,7 @@ const ROAD_Y = 0.2;
 // Дороги: прямоугольные полосы по линиям сетки, собранные в один меш (запекание)
 // xLines - вертикальные дороги (вдоль Z), zLines - горизонтальные (вдоль X)
 // Пересечения перекрываются - цвет один, поэтому не мешает.
-export function buildRoadGeometry({ road, bounds }: BuildGeometryParams): FlatGeometry {
+export function constructRoadGeometry({ road, bounds }: ConstructGeometryParams): FlatGeometry {
   const { xLines, zLines, width } = road;
   const half = width / 2;
 

@@ -13,7 +13,7 @@ export interface Ray {
   // начало луча (камера)
   origin: vec3;
   // направление, нормализованное
-  dir: vec3;
+  dirNorm: vec3;
 }
 
 // Экранная точка (клилк) => луч в мире: из камеры через точку на дальней плоскости (ndcZ = 1).
@@ -23,6 +23,6 @@ export function screenPointToRay({ event, rect, viewProjection, eyePoint }: Scre
   if (!inverseVP) return null;
   const far = ndcToWorld({ ndcX, ndcY, ndcZ: 1, inverseVP });
   const origin = eyePoint;
-  const dir = vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), far, origin));
-  return { origin, dir };
+  const dirNorm = vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), far, origin));
+  return { origin, dirNorm };
 }

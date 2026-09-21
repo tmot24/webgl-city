@@ -1,18 +1,35 @@
-// Бинарная min-куча по числовому приоритету: push за O(log n), извлечение минимума (pop) за O(log n)/
-// Приоритетная очередь для A* (и не только).
-export class MinHeap<T> {
-  private readonly items: { value: T; priority: number }[] = [];
+interface Item {
+  // id узла
+  value: number;
+  // расстояние
+  priority: number;
+}
+
+/**
+ * Бинарная min-куча по числовому приоритету: push за O(log n), извлечение минимума (pop) за O(log n).
+ * Приоритетная очередь для A* (и не только).
+ * каждый родитель ≤ своих детей
+ *             [0]=2
+ *           /       \
+ *       [1]=5       [2]=3
+ *       /   \       /
+ *   [3]=9  [4]=6  [5]=4
+ *
+ * items = [2, 5, 3, 9, 6, 4]
+ * */
+export class MinHeap {
+  private readonly items: Item[] = [];
 
   get size(): number {
     return this.items.length;
   }
 
-  push({ value, priority }: { value: T; priority: number }): void {
+  push({ value, priority }: Item): void {
     this.items.push({ value, priority });
     this.bubbleUp(this.items.length - 1);
   }
 
-  pop(): T | undefined {
+  pop(): number | undefined {
     const items = this.items;
     if (items.length === 0) return undefined;
 
@@ -28,12 +45,14 @@ export class MinHeap<T> {
   // Поднимает элемент, пока он меньше родителя
   private bubbleUp(index: number): void {
     const items = this.items;
+    const item = items[index]; // держим поднимаемый элемент "в руке"
     while (index > 0) {
       const parent = Math.floor((index - 1) / 2); // (index - 1) >> 1 (побитовый сдвиг вправо)
-      if (items[index].priority >= items[parent].priority) break;
-      [items[index], items[parent]] = [items[parent], items[index]];
+      if (item.priority >= items[parent].priority) break; // сравниваем именно item
+      items[index] = items[parent]; // сдвигаем родителя вниз
       index = parent;
     }
+    items[index] = item;
   }
 
   // Опускает элемент к меньшему из детей, пока не встанет на место

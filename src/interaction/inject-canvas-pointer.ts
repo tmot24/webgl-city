@@ -25,11 +25,15 @@ export function injectCanvasPointer({
   const destroyRef = inject(DestroyRef);
 
   afterNextRender(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+    destroyRef.onDestroy(() => controller.abort());
+
     const canvas = canvasRef().nativeElement;
     let downX = 0;
     let downY = 0;
 
-    const rayForm = (event: PointerEvent): Ray | null => {
+    const rayFrom = (event: PointerEvent): Ray | null => {
       const rect = canvas.getBoundingClientRect();
       return screenPointToRay({ event, rect, viewProjection: viewProjection(), eyePoint: eyePoint() });
     };
@@ -44,22 +48,17 @@ export function injectCanvasPointer({
       if (!enabled()) return;
       if (Math.hypot(event.clientX - downX, event.clientY - downY) > CLICK_MOVE_THRESHOLD) return;
 
-      const ray = rayForm(event);
+      const ray = rayFrom(event);
       if (ray) onClick(ray);
     };
     const onPointerMove = (event: PointerEvent) => {
       if (!enabled()) return;
-      const ray = rayForm(event);
+      const ray = rayFrom(event);
       if (ray) onMove?.(ray);
     };
 
-    canvas.addEventListener('pointerdown', onDown);
-    canvas.addEventListener('pointerup', onUp);
-    if (onMove) canvas.addEventListener('pointermove', onPointerMove);
-    destroyRef.onDestroy(() => {
-      canvas.removeEventListener('pointerdown', onDown);
-      canvas.removeEventListener('pointerup', onUp);
-      if (onMove) canvas.removeEventListener('pointermove', onPointerMove);
-    });
+    canvas.addEventListener('pointerdown', onDown, { signal });
+    canvas.addEventListener('pointerup', onUp, { signal });
+    if (onMove) canvas.addEventListener('pointermove', onPointerMove, { signal });
   });
 }

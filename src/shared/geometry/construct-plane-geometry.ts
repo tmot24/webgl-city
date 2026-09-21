@@ -1,10 +1,10 @@
 interface ConstructPlaneGeometry {
-  width?: number;
-  depth?: number;
+  width: number;
+  depth: number;
 }
 
 // Горизонтальный квадрат в плоскости XZ (пол), центр в (0,0,0), нормаль вверх.
-export function constructPlaneGeometry({ width = 1, depth = 1 }: ConstructPlaneGeometry) {
+export function constructPlaneGeometry({ width, depth }: ConstructPlaneGeometry) {
   const halfWidth = width / 2;
   const halfDepth = depth / 2;
 

@@ -4,7 +4,7 @@ interface RayBoxDistance {
   // Начало луча
   origin: vec3;
   // Направление луча (нормализованное). Точка на луче = origin + t * dir
-  dir: vec3;
+  dirNorm: vec3;
   // Ближний-нижний-левый угол коробки: покомпонентный минимум [minX, minY, minZ]
   boxMin: vec3;
   // Дальний-верхний-правый угол коробки: покомпонентный максимум [maxX, maxY, maxZ]
@@ -15,13 +15,13 @@ interface RayBoxDistance {
  * Пересечение луча с осевой коробкой методом слэбов, возвращает РАССТОЯНИЕ до входа
  * (tMin) вдоль луча. Нужно, чтобы среди задетых коробок выбрать БЛИЖАЙШУЮ.
  * */
-export function rayBoxDistance({ origin, dir, boxMin, boxMax }: RayBoxDistance) {
+export function rayBoxDistance({ origin, dirNorm, boxMin, boxMax }: RayBoxDistance) {
   let tMin = -Infinity;
   let tMax = Infinity;
 
   for (let axis = 0; axis < 3; axis++) {
     const o = origin[axis];
-    const d = dir[axis];
+    const d = dirNorm[axis];
 
     if (Math.abs(d) < glMatrix.EPSILON) {
       // луч параллелен плоскостям оси: начало вне полосы => мимо

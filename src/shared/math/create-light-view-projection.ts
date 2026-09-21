@@ -16,15 +16,15 @@ interface CreateLightViewProjection {
  * при любом угле солнца, без подстройки под кадр и без мерцания
  * */
 export function createLightViewProjection({ lightDirection, center, radius }: CreateLightViewProjection): mat4 {
-  const lightDir = vec3.normalize(vec3.create(), lightDirection);
+  const lightDirNorm = vec3.normalize(vec3.create(), lightDirection);
 
   // Позиция "солнца": на 2 радиуса от центра вдоль направления НА свет (гарантировано снаружи сцены)
   const lightDistance = radius * 2;
-  const lightPos = vec3.scaleAndAdd(vec3.create(), center, lightDir, lightDistance);
+  const lightPos = vec3.scaleAndAdd(vec3.create(), center, lightDirNorm, lightDistance);
 
   // up выбираем так, чтобы совпасть с направлением взгляда (иначе lookAt вырождается, ломается):
   // если свет почти вертикальный - берём ось Z, иначе обычный "вверх" Y
-  const worldUp = Math.abs(lightDir[1]) > 0.99 ? vec3.fromValues(0, 0, 1) : vec3.fromValues(0, 1, 0);
+  const worldUp = Math.abs(lightDirNorm[1]) > 0.99 ? vec3.fromValues(0, 0, 1) : vec3.fromValues(0, 1, 0);
 
   const view = mat4.lookAt(mat4.create(), lightPos, center, worldUp);
 

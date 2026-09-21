@@ -2,34 +2,36 @@ import { vec3 } from 'gl-matrix';
 import { RoadGrid } from '../generate-city.types';
 import { RoadEdge, RoadGraph, RoadGraphConnect, RoadGraphLink, RoadNode } from './build-road-graph.type';
 
-export function buildRoadGraph({ road }: { road: RoadGrid }) {
+export function buildRoadGraph({ road }: { road: RoadGrid }): RoadGraph {
   const { xLines, zLines } = road;
   const nx = xLines.length;
   const nz = zLines.length;
-  const nodeId = (i: number, j: number) => i * nz + j;
+  const nodeId = (x: number, z: number) => x * nz + z;
 
   const nodes: RoadNode[] = [];
-  for (let i = 0; i < nx; i++) {
-    for (let j = 0; j < nz; j++) {
+  // Декартово произведение линий: каждый перекрёсток получает свою точку
+  for (let x = 0; x < nx; x++) {
+    for (let z = 0; z < nz; z++) {
       nodes.push({
-        id: nodeId(i, j),
-        i,
-        j,
-        position: vec3.fromValues(xLines[i], 0, zLines[j]),
+        id: nodeId(x, z),
+        xIndex: x,
+        zIndex: z,
+        position: vec3.fromValues(xLines[x], 0, zLines[z]),
       });
     }
   }
 
+  // Рёбра
   const edges: RoadEdge[] = [];
-  // Смежные
-  const adjacency: RoadGraph['adjacency'] = new Map();
+  // Пути
+  const path: RoadGraph['path'] = new Map();
 
   const link = ({ from, to, cost }: RoadGraphLink) => {
-    const list = adjacency.get(from);
+    const list = path.get(from);
     if (list) {
       list.push({ to, cost });
     } else {
-      adjacency.set(from, [{ to, cost }]);
+      path.set(from, [{ to, cost }]);
     }
   };
 
@@ -40,19 +42,19 @@ export function buildRoadGraph({ road }: { road: RoadGrid }) {
     link({ from: b, to: a, cost }); // неориентированный граф - обе стороны смежности
   };
 
-  for (let i = 0; i < nx; i++) {
-    for (let j = 0; j < nz; j++) {
-      const a = nodeId(i, j);
-      // сосед справа (по X)
-      if (i + 1 < nx) {
-        connect({ a, b: nodeId(i + 1, j) });
+  for (let x = 0; x < nx; x++) {
+    for (let z = 0; z < nz; z++) {
+      const a = nodeId(x, z);
+      // сосед по X+
+      if (x + 1 < nx) {
+        connect({ a, b: nodeId(x + 1, z) });
       }
-      // сосед сверху (по Z)
-      if (j + 1 < nz) {
-        connect({ a, b: nodeId(i, j + 1) });
+      // сосед по Z+
+      if (z + 1 < nz) {
+        connect({ a, b: nodeId(x, z + 1) });
       }
     }
   }
 
-  return { nodes, edges, adjacency };
+  return { nodes, edges, path };
 }

@@ -2,12 +2,12 @@ import { vec3 } from 'gl-matrix';
 
 // Перекрёсток
 export interface RoadNode {
-  // i * zLines.length + j (совпадает с индексом), пригодится для A*
+  // x * zLines.length + z (совпадает с индексом), пригодится для A*
   id: number;
   // индекс линии по X (xLines)
-  i: number;
+  xIndex: number;
   // индекс линии по Z (zLines)
-  j: number;
+  zIndex: number;
   // перекрёсток в мире (y=0)
   position: vec3;
 }
@@ -22,7 +22,7 @@ export interface RoadEdge {
   cost: number;
 }
 
-export interface RoadGraphAdjacencyValue {
+export interface RoadGraphPathValue {
   to: number;
   cost: number;
 }
@@ -33,7 +33,7 @@ export interface RoadGraph {
   // уникальные рёбра
   edges: RoadEdge[];
   // соседи узла с ценой (обе стороны) - по этому А* и ходит
-  adjacency: Map<number, RoadGraphAdjacencyValue[]>;
+  path: Map<number, RoadGraphPathValue[]>;
 }
 
 export interface RoadGraphLink {

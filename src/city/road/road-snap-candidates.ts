@@ -9,7 +9,9 @@ interface RoadSnapCandidates {
 export function roadSnapCandidates({ road: { xLines, zLines, width }, point }: RoadSnapCandidates): vec3[] {
   if (!xLines.length || !zLines.length) return [];
 
+  // Ближайшая x линия
   const x = nearest({ values: xLines, target: point[0] });
+  // Ближайшая z линия
   const z = nearest({ values: zLines, target: point[2] });
   const half = width / 2;
 

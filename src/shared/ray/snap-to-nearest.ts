@@ -34,7 +34,8 @@ export function snapToNearest({
   for (const candidate of candidates) {
     const screen = worldToScreen({ point: candidate, viewProjection, width, height });
     if (!screen) continue;
-    const dist = Math.hypot(screen.x - cursor.x, screen.y - cursor.y);
+    // Длина гипотенузы, здесь даёт евклидово (напрямик) расстояние в пикселях (между курсором и проекцией кандидата на экран)
+    const dist = Math.hypot(screen.x - cursor.x, screen.y - cursor.y); // = √(dx² + dy²)
     if (dist < bestDist) {
       bestDist = dist;
       best = candidate;

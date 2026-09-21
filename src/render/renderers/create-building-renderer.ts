@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { InstanceData } from '../../city/build-instance-data';
-import { constructCubeGeometry } from '../../shared/geometry/construct-cube-geometry';
+import { ConstructCubeGeometry } from '../../shared/geometry/construct-cube-geometry';
 import { createGLProgram } from '../../shared/gl/create-gl-program';
 import vertex from '../material/building-material/building-material.vert';
 import fragment from '../material/building-material/building-material.frag';
@@ -18,11 +18,12 @@ export interface BuildingRenderer {
 export function createBuildingRenderer({
   gl,
   instanceData,
+  cubeGeometry,
 }: {
   gl: WebGL2RenderingContext;
   instanceData: InstanceData;
+  cubeGeometry: ConstructCubeGeometry;
 }): BuildingRenderer {
-  const geometry = constructCubeGeometry();
   const program = createGLProgram({
     gl,
     vertex,
@@ -35,12 +36,12 @@ export function createBuildingRenderer({
       {
         // per-vertex (из геометрии куба)
         location: BUILDING_ATTRIBUTES_LOCATION.position,
-        srcData: geometry.position,
+        srcData: cubeGeometry.position,
         size: 3,
       },
       {
         location: BUILDING_ATTRIBUTES_LOCATION.normal,
-        srcData: geometry.normal,
+        srcData: cubeGeometry.normal,
         size: 3,
       },
       {
@@ -58,7 +59,7 @@ export function createBuildingRenderer({
       },
     ],
     indices: {
-      srcData: geometry.indices,
+      srcData: cubeGeometry.indices,
     },
   });
 
@@ -73,7 +74,7 @@ export function createBuildingRenderer({
     gl.bindVertexArray(vao);
     material.updatePerFrame({ viewProjection, lightDirection, lightViewProjection, selectedId });
     // Один вызов на весь город: 36 индексов куба * instanceData.count зданий
-    gl.drawElementsInstanced(gl.TRIANGLES, geometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
+    gl.drawElementsInstanced(gl.TRIANGLES, cubeGeometry.count, gl.UNSIGNED_SHORT, 0, instanceData.count);
     gl.bindVertexArray(null);
     gl.disable(gl.CULL_FACE); // вернул обратно
   };

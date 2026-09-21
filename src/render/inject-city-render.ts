@@ -6,11 +6,12 @@ import { injectOrbitCamera } from '../camera/inject-orbit-camera';
 import { createViewProjectionMatrix } from '../shared/math/create-view-projection-matrix';
 import { BuildingRenderer, createBuildingRenderer } from './renderers/create-building-renderer';
 import { createSurfaceRenderer, SurfaceRenderer } from './renderers/create-surface-renderer';
-import { FlatGeometry } from '../city/road/build-road-geometry';
+import { FlatGeometry } from '../city/road/construct-road-geometry';
 import { createShadowRenderer, ShadowRender } from './renderers/create-shadow-renderer';
 import { createLightViewProjection } from '../shared/math/create-light-view-projection';
 import { Building } from '../city/generate-city.types';
 import { createLineRenderer, LineRenderer } from './renderers/create-line-renderer';
+import { constructCubeGeometry } from '../shared/geometry/construct-cube-geometry';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -25,8 +26,6 @@ interface InjectCityRender {
   };
   // направление НА свет (нормализованное)
   lightDirection: Signal<vec3>;
-  // радиус охватывающий сферы города - под ортобокс карты теней (уже не надо, но пока оставлю, мало ли понадобиться)
-  sceneRadius: number;
   selectedBuilding: Signal<Building | null>;
   activePolyline: Signal<vec3[] | null>;
   // подсветка выбранного здания
@@ -81,7 +80,9 @@ export function injectCityRender({
       gl.enable(gl.DEPTH_TEST);
       gl.clearColor(0.53, 0.7, 0.87, 1); // небесный фон
 
-      buildings = createBuildingRenderer({ gl, instanceData });
+      const cubeGeometry = constructCubeGeometry();
+
+      buildings = createBuildingRenderer({ gl, instanceData, cubeGeometry });
       surface = createSurfaceRenderer({
         gl,
         surfaces: [
@@ -95,7 +96,7 @@ export function injectCityRender({
           },
         ],
       });
-      shadow = createShadowRenderer({ gl, instanceData, destroyRef, size: 4096 });
+      shadow = createShadowRenderer({ gl, instanceData, cubeGeometry, destroyRef, size: 4096 });
       line = createLineRenderer({ gl });
 
       destroyRef.onDestroy(() => {

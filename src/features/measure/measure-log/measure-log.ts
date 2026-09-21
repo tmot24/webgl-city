@@ -29,7 +29,7 @@ export class MeasureLog {
           length: vec3.distance(a, b).toFixed(2),
           horizontal: Math.hypot(dx, dz).toFixed(2),
           height: Math.abs(dy).toFixed(2),
-          ax: a[0].toFixed(2),
+          ax: a[0].toFixed(0),
           ay: a[1].toFixed(0),
           az: a[2].toFixed(0),
           bx: b[0].toFixed(0),

@@ -12,20 +12,27 @@ interface IntersectGround {
   // начало луча (позиция камеры)
   origin: vec3;
   // направление луча (нормализованное)
-  dir: vec3;
+  dirNorm: vec3;
   // прямоугольник земли: точка вне него => null
   bounds: GroundBounds;
 }
 
-// Пересечение луча с землёй - плоскость y=0. null - луч параллелен земле или уходит вверх
-export function intersectGround({ origin, dir, bounds }: IntersectGround) {
-  if (Math.abs(dir[1]) < EPSILON) return null; // параллелен земле
-  const t = -origin[1] / dir[1];
-  if (t < 0) return null; // земля позади камеры
+export interface GroundHit {
+  point: vec3;
+  // расстояние вдоль луча (dirNorm нормализован => в метрах)
+  distance: number;
+}
 
-  const point = vec3.scaleAndAdd(vec3.create(), origin, dir, t);
+// Пересечение луча с землёй - плоскость y=0. null - луч параллелен земле, уходит вверх или попадает за край травы
+export function intersectGround({ origin, dirNorm, bounds }: IntersectGround): GroundHit | null {
+  if (Math.abs(dirNorm[1]) < EPSILON) return null; // параллелен земле
+  const distance = -origin[1] / dirNorm[1]; // уравнение: origin.y + dir.y * distance = 0
+  if (distance < 0) return null; // земля позади камеры
+
+  // точка пересечения
+  const point = vec3.scaleAndAdd(vec3.create(), origin, dirNorm, distance); // уравнение: origin + dir * distance
   if (point[0] < bounds.minX || point[0] > bounds.maxX || point[2] < bounds.minZ || point[2] > bounds.maxZ) {
-    return null; // за краем траввы
+    return null; // за краем травы
   }
-  return point;
+  return { point, distance };
 }

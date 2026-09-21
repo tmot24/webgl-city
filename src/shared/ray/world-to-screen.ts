@@ -17,7 +17,10 @@ export interface ScreenPoint {
 }
 
 export function worldToScreen({ point, viewProjection, width, height }: WorldToScreen): ScreenPoint | null {
-  const clip = vec4.transformMat4(vec4.create(), vec4.fromValues(point[0], point[1], point[2], 1), viewProjection);
+  const position = vec4.fromValues(point[0], point[1], point[2], 1);
+  // точка в clip space [x, y, z, w] - то же, что gl_Position в вершинном шейдере
+  const clip = vec4.transformMat4(vec4.create(), position, viewProjection);
+  // w - глубина перед камерой (-z в пространстве камеры); <= 0 => точка позади камеры (для перспективной камеры)
   const w = clip[3];
   if (w <= 0) return null;
 
