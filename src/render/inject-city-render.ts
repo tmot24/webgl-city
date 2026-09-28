@@ -9,11 +9,9 @@ import { createSurfaceRenderer, SurfaceRenderer } from './renderers/create-surfa
 import { FlatGeometry } from '../city/road/construct-road-geometry';
 import { createShadowRenderer, ShadowRender } from './renderers/create-shadow-renderer';
 import { createLightViewProjection } from '../shared/math/create-light-view-projection';
+import { Building } from '../city/generate-city.types';
 import { createLineRenderer, LineRenderer } from './renderers/create-line-renderer';
 import { constructCubeGeometry } from '../shared/geometry/construct-cube-geometry';
-import { BuildingStore } from '../features/building-pick/building.store';
-import { SceneModStore } from '../features/mode/scene-mod.store';
-import { SceneStore } from '../store/scene.store';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -28,6 +26,10 @@ interface InjectCityRender {
   };
   // направление НА свет (нормализованное)
   lightDirection: Signal<vec3>;
+  selectedBuilding: Signal<Building | null>;
+  activePolyline: Signal<vec3[] | null>;
+  // подсветка выбранного здания
+  isHighlightBuild: Signal<boolean>;
 }
 
 // Тень следует за камерой: охват = дистанция зума * фактор, зажатый в разумные пределы.
@@ -41,11 +43,10 @@ export function injectCityRender({
   road: { roadGeometry, roadColor },
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
   lightDirection,
+  selectedBuilding,
+  activePolyline,
+  isHighlightBuild,
 }: InjectCityRender) {
-  const buildingStore = inject(BuildingStore);
-  const sceneStore = inject(SceneStore);
-  const modeStore = inject(SceneModStore);
-
   const size = injectCanvasSize({ canvasRef });
   const castShadows = signal(true);
   const destroyRef = inject(DestroyRef);
@@ -150,7 +151,7 @@ export function injectCityRender({
     gl.bindTexture(gl.TEXTURE_2D, shadow.depthTexture);
 
     surface.draw({ viewProjection: camera, lightViewProjection }); // трава + дороги принимают тень
-    const selectedId = modeStore.is.building() ? (buildingStore.selected()?.id ?? -1) : -1;
+    const selectedId = isHighlightBuild() ? (selectedBuilding()?.id ?? -1) : -1;
     buildings.draw({
       viewProjection: camera,
       lightDirection: light,
@@ -158,7 +159,7 @@ export function injectCityRender({
       selectedId,
     });
     // Измерительная линия - поверх всего
-    line.draw({ viewProjection: camera, eye: eyePoint(), points: sceneStore.activePolyline() });
+    line.draw({ viewProjection: camera, eye: eyePoint(), points: activePolyline() });
   }
 
   return { lightDirection, castShadows, viewProjection, eyePoint, size };

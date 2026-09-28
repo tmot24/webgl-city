@@ -35,7 +35,9 @@ export class Scene {
 
   readonly lightDirection = signal(vec3.normalize(vec3.create(), vec3.fromValues(0.6, 1.0, 0.4)));
 
-  private readonly sceneStore = inject(SceneStore);
+  protected readonly sceneStore = inject(SceneStore);
+  protected readonly modeStore = inject(SceneModStore);
+  protected readonly buildingStore = inject(BuildingStore);
 
   constructor() {
     const { city, instanceData, groundBounds, groundGeometry, roadGeometry, buildingBoxes } = buildCityScene();
@@ -44,6 +46,8 @@ export class Scene {
       canvasRef: this.canvasRef,
       lightDirection: this.lightDirection,
       instanceData,
+      selectedBuilding: this.buildingStore.selected,
+      activePolyline: this.sceneStore.activePolyline,
       ground: {
         groundGeometry,
         groundColor: vec3.fromValues(0.36, 0.55, 0.32),
@@ -52,6 +56,7 @@ export class Scene {
         roadGeometry,
         roadColor: vec3.fromValues(0.25, 0.25, 0.27),
       },
+      isHighlightBuild: this.modeStore.is.building,
     });
 
     // Камера для UI-оверлея (проекция мир => экран в дочерних фичах)

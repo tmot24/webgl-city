@@ -5,9 +5,6 @@ import { computed, Signal } from '@angular/core';
 type ModelFlags = Record<SceneMode, Signal<boolean>>;
 
 export const SceneModStore = signalStore(
-  {
-    providedIn: 'root',
-  },
   withState<{ mode: SceneMode }>({ mode: 'building' }),
   withProps(({ mode }) => ({
     // Флаг на каждый режим: modeStore.is.measure() - фичи включают свой ввод по нему
