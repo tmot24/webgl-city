@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { Building } from '../../../city/generate-city.types';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { BuildingStore } from '../building.store';
 
 @Component({
   imports: [],
@@ -9,10 +9,10 @@ import { Building } from '../../../city/generate-city.types';
   templateUrl: './building-info.html',
 })
 export class BuildingInfo {
-  readonly building = input<Building | null>();
+  protected readonly store = inject(BuildingStore);
 
   protected readonly info = computed(() => {
-    const build = this.building();
+    const build = this.store.selected();
     if (!build) return null;
     return {
       id: build.id,

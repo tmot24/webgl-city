@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouteStore } from '../route.store';
 
 export interface RouteInfo {
   length: string;
@@ -13,7 +14,5 @@ export interface RouteInfo {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoutePanel {
-  readonly info = input<RouteInfo | null>(null);
-  readonly awaitingSecond = input<boolean>(false);
-  readonly reset = output<void>();
+  protected readonly store = inject(RouteStore);
 }

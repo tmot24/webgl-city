@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { injectMeasureOverlay } from '../inject-measure-overlay';
 
 // css пиксели
 export interface MeasureLabelData {
@@ -15,5 +16,5 @@ export interface MeasureLabelData {
   templateUrl: './measure-label.html',
 })
 export class MeasureLabel {
-  readonly label = input<MeasureLabelData | null>();
+  protected readonly overlay = injectMeasureOverlay();
 }

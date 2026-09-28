@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { MODE_HINTS, SceneMode } from '../scene-mode';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { MODE_HINTS } from '../scene-mode';
+import { SceneModStore } from '../scene-mod.store';
 
 @Component({
   imports: [],
@@ -9,6 +10,6 @@ import { MODE_HINTS, SceneMode } from '../scene-mode';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModeHint {
-  readonly mode = input.required<SceneMode>();
-  protected readonly text = computed(() => MODE_HINTS[this.mode()]);
+  protected readonly store = inject(SceneModStore);
+  protected readonly text = computed(() => MODE_HINTS[this.store.mode()]);
 }

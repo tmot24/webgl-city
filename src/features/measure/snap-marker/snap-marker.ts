@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { ScreenPoint } from '../../../shared/ray/world-to-screen';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { injectMeasureOverlay } from '../inject-measure-overlay';
 
 @Component({
   imports: [],
@@ -10,5 +10,5 @@ import { ScreenPoint } from '../../../shared/ray/world-to-screen';
 })
 // Маркер залипания: кружок в точке, к которой прилипнет клик
 export class SnapMarker {
-  readonly position = input<ScreenPoint | null>(null);
+  protected readonly overlay = injectMeasureOverlay();
 }

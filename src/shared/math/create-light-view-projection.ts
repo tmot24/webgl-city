@@ -13,7 +13,7 @@ interface CreateLightViewProjection {
  * Ортографическая матрица "вид из солнца" для карты теней (directional light).
  * Свет ставим за пределами сцены вдоль направления НА свет, смотрим в центр,
  * а ортобокс делаем ровно по сфере радиуса radius - тогда вся сцена попадает в карту
- * при любом угле солнца, без подстройки под кадр и без мерцания
+ * при любом угле солнца
  * */
 export function createLightViewProjection({ lightDirection, center, radius }: CreateLightViewProjection): mat4 {
   const lightDirNorm = vec3.normalize(vec3.create(), lightDirection);

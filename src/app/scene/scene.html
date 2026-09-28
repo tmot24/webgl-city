@@ -1,35 +1,22 @@
 <canvas #canvas class="scene__canvas"></canvas>
 
-<!--Слой UI поверх canvas: сюда лягут Angular-компоненты (кнопки, лог измерений).
-    pointer-events отключены на слое целиком, а конкретные контролы вернут
-    себе point-events: auto - тогда клики по "пустом" месту уходят в canvas.
--->
 <div class="scene__overlay">
   <app-control-hint />
 
-  <app-mode-toolbar [mode]="activeMode()" (modeChange)="activeMode.set($event)" />
-  <app-mode-hint [mode]="activeMode()" />
+  <app-mode-toolbar />
+  <app-mode-hint />
 
-  @if (activeMode() === 'building') {
-    <app-building-info [building]="selectedBuilding()" />
+  @if (modeStore.is.building()) {
+    <app-building-info />
   }
-  @if (activeMode() === 'measure') {
-    <app-measure-log
-      [measurements]="measureState.measurements()"
-      [selectedId]="measureState.selectedMeasurementId()"
-      (select)="measureState.selectedMeasurementId.set($event)"
-      (remove)="measureState.remove({ id: $event })"
-    />
-    <app-measure-label [label]="measureState.label()" />
-    <app-snap-marker [position]="measureState.snapMarker()" />
+  @if (modeStore.is.measure()) {
+    <app-measure-log />
+    <app-measure-label />
+    <app-snap-marker />
   }
 
-  @if (activeMode() === 'route') {
-    <app-route-panel
-      [info]="routeState.routeInfo()"
-      [awaitingSecond]="routeState.awaitingSecond()"
-      (reset)="routeState.reset()"
-    />
+  @if (modeStore.is.route()) {
+    <app-route-panel />
   }
   <ng-content />
 </div>

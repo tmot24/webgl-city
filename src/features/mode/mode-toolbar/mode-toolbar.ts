@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, model } from '@angular/core';
-import { SCENE_MODES, SceneMode } from '../scene-mode';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { SCENE_MODES } from '../scene-mode';
+import { SceneModStore } from '../scene-mod.store';
 
 @Component({
   imports: [],
@@ -9,6 +10,6 @@ import { SCENE_MODES, SceneMode } from '../scene-mode';
   templateUrl: './mode-toolbar.html',
 })
 export class ModeToolbar {
-  readonly modes = SCENE_MODES;
-  readonly mode = model.required<SceneMode>(); // двусторонняя связанность
+  protected readonly modes = SCENE_MODES;
+  protected readonly store = inject(SceneModStore);
 }

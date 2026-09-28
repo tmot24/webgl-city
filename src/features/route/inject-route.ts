@@ -1,60 +1,51 @@
-import { ElementRef, Signal, WritableSignal } from '@angular/core';
+import { ElementRef, inject, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
-import { RoadGraph } from '../../city/road/build-road-graph.type';
 import { GroundBounds, intersectGround } from '../../shared/ray/intersect-ground';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
 import { nearestNode } from '../../city/road/nearest-node';
 import { findPath } from '../../city/road/find-path';
+import { RoadGrid } from '../../city/generate-city.types';
+import { RouteStore } from './route.store';
+import { buildRoadGraph } from '../../city/road/build-road-graph';
+import { SceneModStore } from '../mode/scene-mod.store';
 
 interface InjectRoute {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
   viewProjection: () => mat4;
   eyePoint: Signal<vec3>;
-  enabled: Signal<boolean>;
-  graph: RoadGraph;
+  road: RoadGrid;
   groundBounds: GroundBounds;
-  // A и B как id узлов графа + найденный маршрут (список id узлов)
-  pointA: WritableSignal<number | null>;
-  pointB: WritableSignal<number | null>;
-  route: WritableSignal<number[] | null>;
 }
 
 /**
  * Режим маршрута: клик по земле => ближайший перекрёсток (узел графа).
+ * Граф и A* - здесь (побочный эффект), в RouteStore уходит только результат
  * */
-export function injectRoute({
-  canvasRef,
-  viewProjection,
-  eyePoint,
-  enabled,
-  graph,
-  groundBounds,
-  pointA,
-  pointB,
-  route,
-}: InjectRoute) {
+export function injectRoute({ canvasRef, viewProjection, eyePoint, groundBounds, road }: InjectRoute) {
+  const store = inject(RouteStore);
+  const graph = buildRoadGraph({ road });
+
   injectCanvasPointer({
     canvasRef,
     viewProjection,
     eyePoint,
-    enabled,
+    enabled: inject(SceneModStore).is.route,
     onClick: ({ origin, dirNorm }) => {
       const groundPoint = intersectGround({ origin, dirNorm: dirNorm, bounds: groundBounds });
       if (!groundPoint) return; // клик мимо земли
 
       const node = nearestNode({ graph, point: groundPoint.point });
-      const start = pointA();
+      const start = store.start();
 
-      if (start === null || pointB() !== null) {
-        pointA.set(node);
-        pointB.set(null);
-        route.set(null);
+      // Нет точки A или маршрут уже построен => этот клик начинает новый
+      if (start === null || !store.awaitingFinish()) {
+        store.begin({ node });
         return;
       }
 
       // A есть, B нет => это B: стром маршрут A* между ними
-      pointB.set(node);
-      route.set(findPath({ graph, start, finish: node }));
+      const ids = findPath({ graph, start, finish: node });
+      store.complete({ node, path: ids?.map((id) => graph.nodes[id].position) ?? null });
     },
   });
 }

@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { Measurement } from '../inject-measure';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { vec3 } from 'gl-matrix';
+import { MeasureStore } from '../measure.store';
 
 @Component({
   imports: [],
@@ -10,16 +10,12 @@ import { vec3 } from 'gl-matrix';
   templateUrl: './measure-log.html',
 })
 export class MeasureLog {
-  readonly measurements = input.required<Measurement[]>();
-  readonly selectedId = input<number | null>(null);
-  // выбрать измерение
-  readonly select = output<number>();
-  // удалить измерение
-  readonly remove = output<number>();
+  protected readonly store = inject(MeasureStore);
 
   // Готовим формирование строки: длина, горизонталь, перепад высоты, координаты концов
   protected readonly rows = computed(() => {
-    return this.measurements()
+    return this.store
+      .measurements()
       .map(({ id, a, b }) => {
         const dx = b[0] - a[0];
         const dy = b[1] - a[1];

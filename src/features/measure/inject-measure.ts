@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { ElementRef, Signal, WritableSignal } from '@angular/core';
+import { ElementRef, inject, Signal } from '@angular/core';
 import { RoadGrid } from '../../city/generate-city.types';
 import { GroundBounds, intersectGround } from '../../shared/ray/intersect-ground';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
@@ -10,12 +10,8 @@ import { SNAP_PIXEL_THRESHOLD } from '../../shared/constants';
 import { roadSnapCandidates } from '../../city/road/road-snap-candidates';
 import { BuildingBox } from '../../city/building-box';
 import { nearestBuildingHit } from '../../city/nearest-building-hit';
-
-export interface Measurement {
-  id: number;
-  a: vec3; // первая точка (мировые координаты)
-  b: vec3; // вторая точка
-}
+import { MeasureStore } from './measure.store';
+import { SceneModStore } from '../mode/scene-mod.store';
 
 interface InjectMeasure {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -23,37 +19,22 @@ interface InjectMeasure {
   road: RoadGrid;
   viewProjection: () => mat4;
   eyePoint: Signal<vec3>;
-  // завершённые измерения (пары точек)
-  measurements: WritableSignal<Measurement[]>;
-  // первая поставленная точка, ждём вторую (null - начинаем новое измерение)
-  pendingPoint: WritableSignal<vec3 | null>;
-  // точка под курсором на поверхности (null в небе)
-  cursorPoint: WritableSignal<vec3 | null>;
-  // выбранное измерение
-  selectedMeasurementId: WritableSignal<number | null>;
-  // точка залипания к углу здания (для маркера)
-  snapPoint: WritableSignal<vec3 | null>;
   // Прямоугольник земли
   groundBounds: GroundBounds;
-  // включён ли режим измерения (Scene выводит из activeMode)
-  enabled: Signal<boolean>;
 }
 
+/**
+ * Режим измерения
+ * */
 export function injectMeasure({
   canvasRef,
   buildingBoxes,
   road,
   viewProjection,
   eyePoint,
-  measurements,
-  pendingPoint,
-  cursorPoint,
-  snapPoint,
-  selectedMeasurementId,
   groundBounds,
-  enabled,
 }: InjectMeasure) {
-  let nextId = 1;
+  const store = inject(MeasureStore);
 
   // Ближайшая поверхность вдоль луча + какое здание задето
   const hitSurface = ({ origin, dirNorm }: Ray) => {
@@ -103,29 +84,14 @@ export function injectMeasure({
     canvasRef,
     viewProjection,
     eyePoint,
-    enabled,
-    onClick: ({ origin, dirNorm }) => {
-      const resolved = resolvePoint({ origin, dirNorm });
+    enabled: inject(SceneModStore).is.measure,
+    onClick: (ray) => {
+      const resolved = resolvePoint(ray);
       if (!resolved) return; // клик в небо
-      const point = resolved.point;
-
-      const first = pendingPoint();
-      if (!first) {
-        pendingPoint.set(point); // первая точка отрезка
-        selectedMeasurementId.set(null); // сброс выбора
-      } else {
-        const id = nextId++;
-        measurements.update((list) => [...list, { id, a: first, b: point }]);
-        selectedMeasurementId.set(id); // сброс выбора
-        pendingPoint.set(null); // измерение завершено, следующий клик начнёт новое
-        cursorPoint.set(null); // резинка больше не нужна
-      }
+      store.placePoint({ point: resolved.point });
     },
-    onMove: ({ origin, dirNorm }) => {
-      const resolved = resolvePoint({ origin, dirNorm });
-      snapPoint.set(resolved?.snapped ? resolved.point : null); // маркер залипания (даже до первого клика)
-      if (!pendingPoint()) return; // резинка только между первой и второй точкой
-      cursorPoint.set(resolved ? resolved.point : null); // null в небе => резинка скрыта
+    onMove: (ray) => {
+      store.hover({ hit: resolvePoint(ray) });
     },
   });
 }
