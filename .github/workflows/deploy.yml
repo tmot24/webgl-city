@@ -31,15 +31,15 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npx ng build --configuration production --base-href /webgl-city/
+        run: npm run build -w @webgl-city/angular -- --configuration production --base-href /webgl-city/
 
       - name: SPA fallback for GitHub Pages (client-side routing)
-        run: cp dist/webgl-city/browser/index.html dist/webgl-city/browser/404.html
+        run: cp apps/angular/dist/webgl-city/browser/index.html apps/angular/dist/webgl-city/browser/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/webgl-city/browser
+          path: apps/angular/dist/webgl-city/browser
 
   deploy:
     needs: build
