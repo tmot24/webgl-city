@@ -1,10 +1,10 @@
 import { mat4, vec3 } from 'gl-matrix';
-import { createGLProgram } from '../../shared/gl/create-gl-program';
+import { createGLProgram } from '../../gl/create-gl-program';
 import vertex from '../material/line-material/line-material.vert';
 import fragment from '../material/line-material/line-material.frag';
-import { createVAO } from '../../shared/gl/create-vao';
+import { createVAO } from '../../gl/create-vao';
 import { createLineMaterial, LINE_ATTRIBUTES_LOCATION } from '../material/line-material/line-material';
-import { EPSILON, FLOATS_PER_SEGMENT, LINE_COLOR, LINE_HALF_WIDTH_FACTOR } from '../../shared/constants';
+import { EPSILON, FLOATS_PER_SEGMENT, LINE_COLOR, LINE_HALF_WIDTH_FACTOR } from '@webgl-city/core/constants';
 
 export interface LineRenderer {
   // points - ломаная (N точек => N-1 сегментов)

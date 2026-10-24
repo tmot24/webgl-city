@@ -1,5 +1,5 @@
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { Building } from '../../city/generate-city.types';
+import { Building } from '@webgl-city/core/city/generate-city.types';
 
 export const BuildingStore = signalStore(
   withState<{ selected: Building | null }>({ selected: null }),

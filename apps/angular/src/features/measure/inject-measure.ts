@@ -1,15 +1,15 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { ElementRef, inject, Signal } from '@angular/core';
-import { RoadGrid } from '../../city/generate-city.types';
-import { GroundBounds, intersectGround } from '../../shared/ray/intersect-ground';
+import { RoadGrid } from '@webgl-city/core/city/generate-city.types';
+import { GroundBounds, intersectGround } from '@webgl-city/core/ray/intersect-ground';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
-import { Ray } from '../../shared/ray/screen-point-to-ray';
-import { snapToNearest } from '../../shared/ray/snap-to-nearest';
-import { buildingCorners } from '../../city/building-corners';
-import { SNAP_PIXEL_THRESHOLD } from '../../shared/constants';
-import { roadSnapCandidates } from '../../city/road/road-snap-candidates';
-import { BuildingBox } from '../../city/building-box';
-import { nearestBuildingHit } from '../../city/nearest-building-hit';
+import { Ray } from '@webgl-city/core/ray/screen-point-to-ray';
+import { snapToNearest } from '@webgl-city/core/ray/snap-to-nearest';
+import { buildingCorners } from '@webgl-city/core/city/building-corners';
+import { SNAP_PIXEL_THRESHOLD } from '@webgl-city/core/constants';
+import { roadSnapCandidates } from '@webgl-city/core/city/road/road-snap-candidates';
+import { BuildingBox } from '@webgl-city/core/city/building-box';
+import { nearestBuildingHit } from '@webgl-city/core/city/nearest-building-hit';
 import { MeasureStore } from './measure.store';
 import { SceneModStore } from '../mode/scene-mod.store';
 

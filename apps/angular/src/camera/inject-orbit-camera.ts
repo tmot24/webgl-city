@@ -2,7 +2,7 @@ import { afterNextRender, computed, DestroyRef, ElementRef, inject, signal, Sign
 import { mat4, vec3 } from 'gl-matrix';
 import { panHandler } from './handlers/pan-handler';
 import { rotateHandler } from './handlers/rotate-handler';
-import { isEditableTarget } from '../shared/dom/is-editable-target';
+import { isEditableTarget } from '@webgl-city/core/dom/is-editable-target';
 
 interface InjectOrbitCamera {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;

@@ -1,7 +1,7 @@
 import { computed, inject, Signal } from '@angular/core';
 import { vec3 } from 'gl-matrix';
 import { MeasureLabelData } from './measure-label/measure-label';
-import { ScreenPoint } from '../../shared/ray/world-to-screen';
+import { ScreenPoint } from '@webgl-city/core/ray/world-to-screen';
 import { MeasureStore } from './measure.store';
 import { SceneViewport } from '../../render/scene-viewport';
 

@@ -1,8 +1,8 @@
 import { ElementRef, inject, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
-import { nearestBuildingHit } from '../../city/nearest-building-hit';
-import { BuildingBox } from '../../city/building-box';
+import { nearestBuildingHit } from '@webgl-city/core/city/nearest-building-hit';
+import { BuildingBox } from '@webgl-city/core/city/building-box';
 import { BuildingStore } from './building.store';
 import { SceneModStore } from '../mode/scene-mod.store';
 

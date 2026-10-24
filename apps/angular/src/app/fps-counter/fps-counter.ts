@@ -7,7 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { runAnimationFrame } from '../../shared/gl/run-animation-frame';
+import { runAnimationFrame } from '@webgl-city/core/gl/run-animation-frame';
 
 @Component({
   imports: [],

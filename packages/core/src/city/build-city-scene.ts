@@ -1,10 +1,10 @@
 import { generateCity } from './generate-city';
 import { buildInstanceData } from './build-instance-data';
 import { constructRoadGeometry } from './road/construct-road-geometry';
-import { constructPlaneGeometry } from '../shared/geometry/construct-plane-geometry';
-import { GROUND_MARGIN } from '../shared/constants';
-import { GroundBounds } from '../shared/ray/intersect-ground';
 import { buildingBox } from './building-box';
+import { constructPlaneGeometry } from '../geometry/construct-plane-geometry';
+import { GROUND_MARGIN } from '../constants';
+import { GroundBounds } from '../ray/intersect-ground';
 
 export function buildCityScene() {
   const city = generateCity({});

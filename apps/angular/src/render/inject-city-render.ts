@@ -1,17 +1,17 @@
 import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, signal, Signal } from '@angular/core';
-import { InstanceData } from '../city/build-instance-data';
+import { InstanceData } from '@webgl-city/core/city/build-instance-data';
 import { vec3 } from 'gl-matrix';
 import { injectCanvasSize } from './inject-canvas-size';
 import { injectOrbitCamera } from '../camera/inject-orbit-camera';
-import { createViewProjectionMatrix } from '../shared/math/create-view-projection-matrix';
-import { BuildingRenderer, createBuildingRenderer } from './renderers/create-building-renderer';
-import { createSurfaceRenderer, SurfaceRenderer } from './renderers/create-surface-renderer';
-import { FlatGeometry } from '../city/road/construct-road-geometry';
-import { createShadowRenderer, ShadowRender } from './renderers/create-shadow-renderer';
-import { createLightViewProjection } from '../shared/math/create-light-view-projection';
-import { Building } from '../city/generate-city.types';
-import { createLineRenderer, LineRenderer } from './renderers/create-line-renderer';
-import { constructCubeGeometry } from '../shared/geometry/construct-cube-geometry';
+import { createViewProjectionMatrix } from '@webgl-city/core/math/create-view-projection-matrix';
+import { BuildingRenderer, createBuildingRenderer } from '@webgl-city/core/render/renderers/create-building-renderer';
+import { createSurfaceRenderer, SurfaceRenderer } from '@webgl-city/core/render/renderers/create-surface-renderer';
+import { FlatGeometry } from '@webgl-city/core/city/road/construct-road-geometry';
+import { createShadowRenderer, ShadowRender } from '@webgl-city/core/render/renderers/create-shadow-renderer';
+import { createLightViewProjection } from '@webgl-city/core/math/create-light-view-projection';
+import { Building } from '@webgl-city/core/city/generate-city.types';
+import { createLineRenderer, LineRenderer } from '@webgl-city/core/render/renderers/create-line-renderer';
+import { constructCubeGeometry } from '@webgl-city/core/geometry/construct-cube-geometry';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;

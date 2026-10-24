@@ -1,6 +1,6 @@
 import { RoadGraph } from './build-road-graph.type';
 import { vec3 } from 'gl-matrix';
-import { MinHeap } from '../../shared/data/min-heap';
+import { MinHeap } from '../../data/min-heap';
 
 interface FindPath {
   graph: RoadGraph;

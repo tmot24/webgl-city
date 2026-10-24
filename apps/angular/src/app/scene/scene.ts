@@ -9,9 +9,9 @@ import { MeasureLabel } from '../../features/measure/measure-label/measure-label
 import { SnapMarker } from '../../features/measure/snap-marker/snap-marker';
 import { ControlHint } from '../control-hint/control-hint';
 import { ModeHint } from '../../features/mode/mode-hint/mode-hint';
-import { isEditableTarget } from '../../shared/dom/is-editable-target';
+import { isEditableTarget } from '@webgl-city/core/dom/is-editable-target';
 import { RoutePanel } from '../../features/route/route-panel/route-panel';
-import { buildCityScene } from '../../city/build-city-scene';
+import { buildCityScene } from '@webgl-city/core/city/build-city-scene';
 import { SceneStore } from '../../store/scene.store';
 import { SceneModStore } from '../../features/mode/scene-mod.store';
 import { BuildingStore } from '../../features/building-pick/building.store';

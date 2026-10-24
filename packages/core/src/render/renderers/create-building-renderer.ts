@@ -1,12 +1,12 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { InstanceData } from '../../city/build-instance-data';
-import { ConstructCubeGeometry } from '../../shared/geometry/construct-cube-geometry';
-import { createGLProgram } from '../../shared/gl/create-gl-program';
+import { ConstructCubeGeometry } from '../../geometry/construct-cube-geometry';
+import { createGLProgram } from '../../gl/create-gl-program';
 import vertex from '../material/building-material/building-material.vert';
 import fragment from '../material/building-material/building-material.frag';
-import { createVAO } from '../../shared/gl/create-vao';
+import { createVAO } from '../../gl/create-vao';
 import { BUILDING_ATTRIBUTES_LOCATION, createBuildingMaterial } from '../material/building-material/building-material';
-import { resolveShaderIncludes } from '../../shared/gl/resolve-shader-includes';
+import { resolveShaderIncludes } from '../../gl/resolve-shader-includes';
 import { SHADER_CHUNKS } from '../material/shader-chunks/shader-chunks';
 
 export interface BuildingRenderer {

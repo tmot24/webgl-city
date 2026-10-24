@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { MODE_HINTS } from '../scene-mode';
+import { MODE_HINTS } from '@webgl-city/core/scene/scene-mode';
 import { SceneModStore } from '../scene-mod.store';
 
 @Component({

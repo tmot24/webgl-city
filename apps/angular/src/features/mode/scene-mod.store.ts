@@ -1,5 +1,5 @@
 import { patchState, signalStore, withMethods, withProps, withState } from '@ngrx/signals';
-import { SCENE_MODES, SceneMode } from './scene-mode';
+import { SCENE_MODES, SceneMode } from '@webgl-city/core/scene/scene-mode';
 import { computed, Signal } from '@angular/core';
 
 type ModelFlags = Record<SceneMode, Signal<boolean>>;

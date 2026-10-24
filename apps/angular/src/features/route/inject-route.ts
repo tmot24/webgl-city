@@ -1,12 +1,12 @@
 import { ElementRef, inject, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
-import { GroundBounds, intersectGround } from '../../shared/ray/intersect-ground';
+import { GroundBounds, intersectGround } from '@webgl-city/core/ray/intersect-ground';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
-import { nearestNode } from '../../city/road/nearest-node';
-import { findPath } from '../../city/road/find-path';
-import { RoadGrid } from '../../city/generate-city.types';
+import { nearestNode } from '@webgl-city/core/city/road/nearest-node';
+import { findPath } from '@webgl-city/core/city/road/find-path';
+import { RoadGrid } from '@webgl-city/core/city/generate-city.types';
 import { RouteStore } from './route.store';
-import { buildRoadGraph } from '../../city/road/build-road-graph';
+import { buildRoadGraph } from '@webgl-city/core/city/road/build-road-graph';
 import { SceneModStore } from '../mode/scene-mod.store';
 
 interface InjectRoute {

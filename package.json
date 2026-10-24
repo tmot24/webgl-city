@@ -2,12 +2,19 @@
   "name": "webgl-city",
   "private": true,
   "packageManager": "npm@11.16.0",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "start:angular": "npm run start -w @webgl-city/angular",
-    "build:angular": "npm run build -w @webgl-city/angular"
+    "build:angular": "npm run build -w @webgl-city/angular",
+    "typecheck:core": "npm run typecheck -w @webgl-city/core"
   },
   "devDependencies": {
     "prettier": "^3.8.1"
+  },
+  "dependencies": {
+    "@webgl-city/angular": "^0.0.0"
   }
 }

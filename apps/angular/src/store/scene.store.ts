@@ -5,7 +5,7 @@ import { BuildingStore } from '../features/building-pick/building.store';
 import { MeasureStore } from '../features/measure/measure.store';
 import { RouteStore } from '../features/route/route.store';
 import { vec3 } from 'gl-matrix';
-import { SceneMode } from '../features/mode/scene-mode';
+import { SceneMode } from '@webgl-city/core/scene/scene-mode';
 
 export const SceneStore = signalStore(
   withProps(() => ({

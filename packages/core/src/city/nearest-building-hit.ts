@@ -1,7 +1,7 @@
-import { Ray } from '../shared/ray/screen-point-to-ray';
 import { BuildingBox } from './building-box';
 import { Building } from './generate-city.types';
-import { rayBoxDistance } from '../shared/ray/ray-box-distance';
+import { Ray } from '../ray/screen-point-to-ray';
+import { rayBoxDistance } from '../ray/ray-box-distance';
 
 interface NearestBuildingHit {
   ray: Ray;
