@@ -1,7 +1,7 @@
 import { ElementRef, Injectable, signal, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
-import { CanvasSize } from './inject-canvas-size';
 import { ScreenPoint, worldToScreen } from '@webgl-city/core/ray/world-to-screen';
+import { CanvasSize } from '@webgl-city/core/dom/observe-canvas-size';
 
 interface ViewportSource {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
