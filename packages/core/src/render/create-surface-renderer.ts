@@ -1,12 +1,12 @@
-import vertex from '../material/flat-color-material/flat-color-material.vert';
-import fragment from '../material/flat-color-material/flat-color-material.frag';
-import { FlatGeometry } from '../../city/road/construct-road-geometry';
+import vertex from './material/flat-color-material/flat-color-material.vert';
+import fragment from './material/flat-color-material/flat-color-material.frag';
+import { FlatGeometry } from '../city/road/construct-road-geometry';
 import { mat4, vec3 } from 'gl-matrix';
-import { createGLProgram } from '../../gl/create-gl-program';
-import { createFlatColorMaterial, FLAT_ATTRIBUTES_LOCATION } from '../material/flat-color-material/flat-color-material';
-import { createVAO } from '../../gl/create-vao';
-import { resolveShaderIncludes } from '../../gl/resolve-shader-includes';
-import { SHADER_CHUNKS } from '../material/shader-chunks/shader-chunks';
+import { createGLProgram } from '../gl/create-gl-program';
+import { createFlatColorMaterial, FLAT_ATTRIBUTES_LOCATION } from './material/flat-color-material/flat-color-material';
+import { createVAO } from '../gl/create-vao';
+import { resolveShaderIncludes } from '../gl/resolve-shader-includes';
+import { SHADER_CHUNKS } from './material/shader-chunks/shader-chunks';
 
 export interface Surface {
   geometry: FlatGeometry;

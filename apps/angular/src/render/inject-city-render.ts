@@ -1,48 +1,46 @@
-import { afterNextRender, afterRenderEffect, DestroyRef, ElementRef, inject, signal, Signal } from '@angular/core';
+import {
+  afterNextRender,
+  afterRenderEffect,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  Signal,
+} from '@angular/core';
 import { InstanceData } from '@webgl-city/core/city/build-instance-data';
 import { vec3 } from 'gl-matrix';
 import { injectCanvasSize } from './inject-canvas-size';
 import { injectOrbitCamera } from '../camera/inject-orbit-camera';
 import { createViewProjectionMatrix } from '@webgl-city/core/math/create-view-projection-matrix';
-import { BuildingRenderer, createBuildingRenderer } from '@webgl-city/core/render/renderers/create-building-renderer';
-import { createSurfaceRenderer, SurfaceRenderer } from '@webgl-city/core/render/renderers/create-surface-renderer';
-import { FlatGeometry } from '@webgl-city/core/city/road/construct-road-geometry';
-import { createShadowRenderer, ShadowRender } from '@webgl-city/core/render/renderers/create-shadow-renderer';
-import { createLightViewProjection } from '@webgl-city/core/math/create-light-view-projection';
 import { Building } from '@webgl-city/core/city/generate-city.types';
-import { createLineRenderer, LineRenderer } from '@webgl-city/core/render/renderers/create-line-renderer';
-import { constructCubeGeometry } from '@webgl-city/core/geometry/construct-cube-geometry';
+import { CityFrame, CityRenderer, CitySurface, createCityRenderer } from '@webgl-city/core/render/create-city-renderer';
+import { CITY_CAMERA } from '@webgl-city/core/city/city-default';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
   instanceData: InstanceData;
-  ground: {
-    groundGeometry: FlatGeometry;
-    groundColor: vec3;
-  };
-  road: {
-    roadGeometry: FlatGeometry;
-    roadColor: vec3;
-  };
+  ground: CitySurface;
+  road: CitySurface;
   // направление НА свет (нормализованное)
-  lightDirection: Signal<vec3>;
+  lightDirectionNorm: Signal<vec3>;
   selectedBuilding: Signal<Building | null>;
   activePolyline: Signal<vec3[] | null>;
   // подсветка выбранного здания
   isHighlightBuild: Signal<boolean>;
 }
 
-// Тень следует за камерой: охват = дистанция зума * фактор, зажатый в разумные пределы.
-const SHADOW_RADIUS_FACTOR = 1; // доля видимой области, попадающая в резкую тень
-const MIN_SHADOW_RADIUS = 150; // не мельче - иначе высокие дома у края теряют тень по верху
-
+/**
+ * Angular-адаптер рендера: собирает CityFrame из сигналов и отдаёт его рендеру ядра.
+ * Перерисовка - когда меняется любой сигнал, из которого собран кадр.
+ * */
 export function injectCityRender({
   canvasRef,
   instanceData,
-  ground: { groundGeometry, groundColor },
-  road: { roadGeometry, roadColor },
+  ground,
+  road,
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
-  lightDirection,
+  lightDirectionNorm,
   selectedBuilding,
   activePolyline,
   isHighlightBuild,
@@ -51,120 +49,58 @@ export function injectCityRender({
   const castShadows = signal(true);
   const destroyRef = inject(DestroyRef);
 
-  // Камера под масштаб города (~1450 м): initialEye задаёт радиус (~2780 м) и 3/4-ракурс сверху
-  const {
-    viewMatrix,
-    center: cameraCenter,
-    distance: cameraDistance,
-    eyePoint,
-  } = injectOrbitCamera({
+  const { viewMatrix, center, distance, eyePoint } = injectOrbitCamera({
     canvasRef,
-    initialEye: vec3.fromValues(1500, 1800, 1500),
+    initialEye: CITY_CAMERA.initialEye,
   });
-  // near/far под масштаб города: ближайшее здание дальше ~1700 м, поэтому near можно поднять - меньше z-fighting
-  const viewProjection = () => {
-    const canvas = canvasRef().nativeElement;
-    const aspect = canvas.width / canvas.height;
-    return createViewProjectionMatrix({ aspect, viewMatrix: viewMatrix(), near: 10, far: 10000 });
-  };
 
-  let gl: WebGL2RenderingContext | null = null;
-  let buildings: BuildingRenderer | null = null;
-  let surface: SurfaceRenderer | null = null;
-  let shadow: ShadowRender | null = null;
-  let line: LineRenderer | null = null;
+  // Аспект - из размера буфера: сигнал, а не canvas.width, чтобы пересчёт был реактивным
+  const viewProjection = computed(() => {
+    const { width, height } = size();
+    return createViewProjectionMatrix({
+      aspect: width / height,
+      viewMatrix: viewMatrix(),
+      near: CITY_CAMERA.near,
+      far: CITY_CAMERA.far,
+    });
+  });
 
-  // ОДИН РАЗ: контекст, программа, рендеры (здания, поверхности) и depth-проход теней
+  const frame = computed((): CityFrame => ({
+    size: size(),
+    camera: {
+      viewProjection: viewProjection(),
+      eye: eyePoint(),
+      center: center(),
+      distance: distance(),
+    },
+    light: {
+      directionNorm: lightDirectionNorm(),
+      castShadows: castShadows(),
+    },
+    selectedId: isHighlightBuild() ? (selectedBuilding()?.id ?? -1) : -1,
+    polyline: activePolyline(),
+  }));
+
+  let renderer: CityRenderer | null = null;
+
+  // ОДИН РАЗ: GL-ресурсы и первый кадр сразу
   afterNextRender({
     write: () => {
-      const context = canvasRef().nativeElement.getContext('webgl2');
-      if (!context) throw new Error('WebGL2 не поддерживается этим браузером');
-      gl = context;
-
-      gl.enable(gl.DEPTH_TEST);
-      gl.clearColor(0.53, 0.7, 0.87, 1); // небесный фон
-
-      const cubeGeometry = constructCubeGeometry();
-
-      buildings = createBuildingRenderer({ gl, instanceData, cubeGeometry });
-      surface = createSurfaceRenderer({
-        gl,
-        surfaces: [
-          {
-            geometry: groundGeometry,
-            color: groundColor,
-          },
-          {
-            geometry: roadGeometry,
-            color: roadColor,
-          },
-        ],
-      });
-      shadow = createShadowRenderer({ gl, instanceData, cubeGeometry, size: 4096 });
-      line = createLineRenderer({ gl });
-
-      destroyRef.onDestroy(() => {
-        buildings?.dispose();
-        surface?.dispose();
-        shadow?.dispose();
-        line?.dispose();
-      });
-
-      render(); // первый кадр сразу
+      renderer = createCityRenderer({ canvas: canvasRef().nativeElement, instanceData, ground, road });
+      destroyRef.onDestroy(() => renderer?.dispose());
+      renderer.render(frame());
     },
   });
 
-  // Реактивно: перерисовка при изменении размера, вращении, направления света
+  // Реактивно: перерисовка при любом изменении кадра
   afterRenderEffect({
-    write: () => render(),
+    write: () => {
+      // Сначала читаем кадр (подписка), потом проверяем рендерер:
+      // при раннем выходе ДО чтения эффект остался бы без зависимостей и больше не сработал
+      const current = frame();
+      renderer?.render(current);
+    },
   });
 
-  function render() {
-    if (!gl || !buildings || !surface || !shadow || !line) return;
-
-    const { width, height } = size();
-    const canvas = canvasRef().nativeElement;
-    // трогаем буфер только при реальном изменении размера
-    if (canvas.width !== width) canvas.width = width;
-    if (canvas.height !== height) canvas.height = height;
-
-    gl.viewport(0, 0, width, height);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    const camera = viewProjection();
-    const light = lightDirection();
-    // Тень привязана к камере: центр - куда смотрим, охват по зуму (чем ближе, тем резче)
-    const shadowRadius = Math.max(MIN_SHADOW_RADIUS, cameraDistance() * SHADOW_RADIUS_FACTOR);
-    const lightViewProjection = createLightViewProjection({
-      lightDirection: light,
-      center: cameraCenter(),
-      radius: shadowRadius,
-    });
-
-    if (castShadows()) {
-      // ПРОХОД 1: глубина города в карту теней (свой viewport и framebuffer внутри)
-      shadow.renderDepth({ lightViewProjection });
-    } else {
-      shadow.clear(); // пустая карта => сцена без теней
-    }
-
-    // ПРОХОД 2: сцена на экран. Карту теней кладём на текстурный юнит 0
-    gl.viewport(0, 0, width, height);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, shadow.depthTexture);
-
-    surface.draw({ viewProjection: camera, lightViewProjection }); // трава + дороги принимают тень
-    const selectedId = isHighlightBuild() ? (selectedBuilding()?.id ?? -1) : -1;
-    buildings.draw({
-      viewProjection: camera,
-      lightDirection: light,
-      lightViewProjection,
-      selectedId,
-    });
-    // Измерительная линия - поверх всего
-    line.draw({ viewProjection: camera, eye: eyePoint(), points: activePolyline() });
-  }
-
-  return { lightDirection, castShadows, viewProjection, eyePoint, size };
+  return { lightDirection: lightDirectionNorm, castShadows, viewProjection, eyePoint, size };
 }

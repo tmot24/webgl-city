@@ -1,13 +1,13 @@
 import { mat4 } from 'gl-matrix';
-import { InstanceData } from '../../city/build-instance-data';
-import { ConstructCubeGeometry } from '../../geometry/construct-cube-geometry';
-import { createGLProgram } from '../../gl/create-gl-program';
-import vertex from '../material/shadow-depth-material/shadow-depth.vert';
-import fragment from '../material/shadow-depth-material/shadow-depth.frag';
-import { createVAO } from '../../gl/create-vao';
-import { BUILDING_ATTRIBUTES_LOCATION } from '../material/building-material/building-material';
-import { createShadowDepthMaterial } from '../material/shadow-depth-material/shadow-depth-material';
-import { createFramebuffer } from '../../gl/create-framebuffer';
+import { InstanceData } from '../city/build-instance-data';
+import { ConstructCubeGeometry } from '../geometry/construct-cube-geometry';
+import { createGLProgram } from '../gl/create-gl-program';
+import vertex from './material/shadow-depth-material/shadow-depth.vert';
+import fragment from './material/shadow-depth-material/shadow-depth.frag';
+import { createVAO } from '../gl/create-vao';
+import { BUILDING_ATTRIBUTES_LOCATION } from './material/building-material/building-material';
+import { createShadowDepthMaterial } from './material/shadow-depth-material/shadow-depth-material';
+import { createFramebuffer } from '../gl/create-framebuffer';
 
 export interface ShadowRender {
   // Карта теней (depth-текстура)

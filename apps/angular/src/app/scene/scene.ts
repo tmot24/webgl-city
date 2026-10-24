@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { injectCityRender } from '../../render/inject-city-render';
-import { vec3 } from 'gl-matrix';
 import { injectBuildingPicker } from '../../features/building-pick/inject-building-picker';
 import { BuildingInfo } from '../../features/building-pick/building-info/building-info';
 import { ModeToolbar } from '../../features/mode/mode-toolbar/mode-toolbar';
@@ -20,6 +19,7 @@ import { RouteStore } from '../../features/route/route.store';
 import { injectMeasure } from '../../features/measure/inject-measure';
 import { injectRoute } from '../../features/route/inject-route';
 import { SceneViewport } from '../../render/scene-viewport';
+import { CITY_COLORS, DEFAULT_LIGHT_DIRECTION } from '@webgl-city/core/city/city-default';
 
 @Component({
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint, RoutePanel],
@@ -32,7 +32,7 @@ import { SceneViewport } from '../../render/scene-viewport';
 export class Scene {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
 
-  readonly lightDirection = signal(vec3.normalize(vec3.create(), vec3.fromValues(0.6, 1.0, 0.4)));
+  readonly lightDirectionNorm = signal(DEFAULT_LIGHT_DIRECTION);
 
   protected readonly sceneStore = inject(SceneStore);
   protected readonly modeStore = inject(SceneModStore);
@@ -43,18 +43,12 @@ export class Scene {
 
     const { viewProjection, eyePoint, size } = injectCityRender({
       canvasRef: this.canvasRef,
-      lightDirection: this.lightDirection,
+      lightDirectionNorm: this.lightDirectionNorm,
       instanceData,
       selectedBuilding: this.buildingStore.selected,
       activePolyline: this.sceneStore.activePolyline,
-      ground: {
-        groundGeometry,
-        groundColor: vec3.fromValues(0.36, 0.55, 0.32),
-      },
-      road: {
-        roadGeometry,
-        roadColor: vec3.fromValues(0.25, 0.25, 0.27),
-      },
+      ground: { geometry: groundGeometry, color: CITY_COLORS.ground },
+      road: { geometry: roadGeometry, color: CITY_COLORS.road },
       isHighlightBuild: this.modeStore.is.building,
     });
 
