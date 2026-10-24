@@ -1,13 +1,9 @@
-import { DestroyRef } from '@angular/core';
-
 interface RunAnimationFrame {
-  destroyRef: DestroyRef;
   onFrame: (params: { time: number; delta: number }) => void;
 }
 
 // Крутит requestAnimationFrame и сам останавливается при уничтожении компонента.
-// Вызвать в injection context (внутри afterNextRender)
-export function runAnimationFrame({ destroyRef, onFrame }: RunAnimationFrame) {
+export function runAnimationFrame({ onFrame }: RunAnimationFrame) {
   let animationId = 0;
   let startTime: number | null = null;
   let lastTime = 0;
@@ -26,5 +22,6 @@ export function runAnimationFrame({ destroyRef, onFrame }: RunAnimationFrame) {
   };
 
   animationId = requestAnimationFrame(tick);
-  destroyRef.onDestroy(() => cancelAnimationFrame(animationId));
+
+  return () => cancelAnimationFrame(animationId);
 }

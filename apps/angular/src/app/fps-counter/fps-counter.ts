@@ -33,8 +33,7 @@ export class FpsCounter {
       let frames = 0;
       let elapsed = 0;
 
-      runAnimationFrame({
-        destroyRef: this.destroyRef,
+      const stop = runAnimationFrame({
         onFrame: ({ delta }) => {
           frames++;
           elapsed += delta;
@@ -45,6 +44,8 @@ export class FpsCounter {
           }
         },
       });
+
+      this.destroyRef.onDestroy(stop);
     });
   }
 }

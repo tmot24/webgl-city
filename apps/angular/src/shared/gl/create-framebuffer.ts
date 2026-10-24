@@ -1,5 +1,3 @@
-import { DestroyRef } from '@angular/core';
-
 /**
  * Прошлый урок (куб) → depth: 'renderbuffer' (или дефолт), color: true.
  * Тени → depth: 'texture', color: false (нужна только глубина).
@@ -11,7 +9,6 @@ interface CreateFramebuffer {
   gl: WebGL2RenderingContext;
   width: number; // размер offscreen-текстуры (степень двойки, 512)
   height: number;
-  destroyRef: DestroyRef;
   depth?: DepthMode;
   color?: boolean; // нужна ли цветовая текстура; для shadow map - false
 }
@@ -22,6 +19,8 @@ export interface Framebuffer {
   depthTexture: WebGLTexture | null; // глубина как текстура (если depth: 'texture') - это shadow map
   width: number;
   height: number;
+  // Освобождаем frambuffer и все вложения
+  dispose: () => void;
 }
 
 /**
@@ -33,7 +32,6 @@ export function createFramebuffer({
   gl,
   width,
   height,
-  destroyRef,
   depth = 'renderbuffer',
   color = true,
 }: CreateFramebuffer): Framebuffer {
@@ -166,12 +164,12 @@ export function createFramebuffer({
   gl.bindTexture(gl.TEXTURE_2D, null);
   gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 
-  destroyRef.onDestroy(() => {
+  const dispose = () => {
     gl.deleteFramebuffer(framebuffer);
     if (colorTexture) gl.deleteTexture(colorTexture);
     if (depthRenderbuffer) gl.deleteRenderbuffer(depthRenderbuffer);
     if (depthTexture) gl.deleteTexture(depthTexture);
-  });
+  };
 
-  return { framebuffer, colorTexture, depthTexture, width, height };
+  return { framebuffer, colorTexture, depthTexture, width, height, dispose };
 }

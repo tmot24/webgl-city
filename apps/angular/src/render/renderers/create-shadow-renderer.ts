@@ -1,6 +1,5 @@
 import { mat4 } from 'gl-matrix';
 import { InstanceData } from '../../city/build-instance-data';
-import { DestroyRef } from '@angular/core';
 import { ConstructCubeGeometry } from '../../shared/geometry/construct-cube-geometry';
 import { createGLProgram } from '../../shared/gl/create-gl-program';
 import vertex from '../material/shadow-depth-material/shadow-depth.vert';
@@ -32,13 +31,11 @@ export function createShadowRenderer({
   gl,
   instanceData,
   cubeGeometry,
-  destroyRef,
   size,
 }: {
   gl: WebGL2RenderingContext;
   instanceData: InstanceData;
   cubeGeometry: ConstructCubeGeometry;
-  destroyRef: DestroyRef;
   size: number;
 }): ShadowRender {
   const program = createGLProgram({
@@ -77,11 +74,14 @@ export function createShadowRenderer({
   const material = createShadowDepthMaterial({ gl, program });
 
   // Карта теней: framebuffer только с depth-текстурой (color: false)
-  const { framebuffer, depthTexture } = createFramebuffer({
+  const {
+    framebuffer,
+    depthTexture,
+    dispose: disposeFramebuffer,
+  } = createFramebuffer({
     gl,
     width: size,
     height: size,
-    destroyRef,
     depth: 'texture',
     color: false,
   });
@@ -124,6 +124,7 @@ export function createShadowRenderer({
     if (indexBuffer) gl.deleteBuffer(indexBuffer);
     gl.deleteVertexArray(vao);
     gl.deleteProgram(program);
+    disposeFramebuffer();
   };
 
   return { depthTexture, size, renderDepth, clear, dispose };
