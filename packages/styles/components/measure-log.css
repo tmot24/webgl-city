@@ -1,9 +1,3 @@
-:host {
-  display: block;
-  height: 100dvh;
-  position: relative;
-}
-
 .measure-log {
   position: absolute;
   top: 8px;
@@ -12,7 +6,7 @@
   pointer-events: auto; /* интерактивная панель: клики/скролл/удаление */
 }
 
-.list {
+.measure-log__list {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -21,27 +15,27 @@
   gap: 8px;
   overflow-y: auto;
   max-height: calc(100dvh - 72px);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
-.item {
+.measure-log__item {
   position: relative;
   padding: 6px 26px 6px 8px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
   cursor: pointer;
   border: 1px solid transparent; /* резерв под рамку выбора, чтобы не дёргалось */
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
 }
-.item:hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-.item_selected {
+
+.measure-log__item_selected {
   background: rgba(255, 210, 77, 0.22);
   border-color: rgba(255, 210, 77, 0.6);
 }
 
-.item__remove {
+.measure-log__remove {
   position: absolute;
   top: 4px;
   right: 4px;
@@ -50,25 +44,28 @@
   border: 0;
   border-radius: 4px;
   background: transparent;
-  color: #fff;
+  color: var(--color-text);
   opacity: 0.5;
   cursor: pointer;
   font-size: var(--font-body);
   line-height: 1;
-}
-.item__remove:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
+
+  &:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+  }
 }
 
-.len {
+.measure-log__length {
   font-weight: 600;
 }
-.sub {
+
+.measure-log__sub {
   opacity: 0.9;
   font-size: var(--font-secondary);
 }
-.pts {
+
+.measure-log__points {
   opacity: 0.8;
   font-size: var(--font-secondary);
   font-variant-numeric: tabular-nums;

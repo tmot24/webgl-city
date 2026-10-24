@@ -5,7 +5,6 @@ import { SceneModStore } from '../scene-mod.store';
 @Component({
   imports: [],
   selector: 'app-mode-hint',
-  styleUrl: './mode-hint.css',
   templateUrl: './mode-hint.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

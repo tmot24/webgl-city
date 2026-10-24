@@ -1,0 +1,20 @@
+.ui-panel {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--color-panel-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-body);
+  line-height: var(--line-body);
+  user-select: none;
+}
+
+.ui-panel__title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: var(--font-title);
+}
+
+.ui-panel__hint {
+  opacity: 0.9;
+}

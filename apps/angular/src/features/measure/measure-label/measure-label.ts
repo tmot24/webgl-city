@@ -12,7 +12,6 @@ export interface MeasureLabelData {
   imports: [],
   selector: 'app-measure-label',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrl: './measure-label.css',
   templateUrl: './measure-label.html',
 })
 export class MeasureLabel {

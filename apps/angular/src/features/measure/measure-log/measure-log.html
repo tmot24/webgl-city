@@ -1,26 +1,26 @@
 <div class="ui-panel measure-log">
   @if (rows().length) {
     <div class="ui-panel__title">Измерения</div>
-    <ol class="list ui-scroll">
+    <ol class="measure-log__list ui-scroll">
       @for (row of rows(); track row.id) {
         <li
-          class="item"
-          [class.item_selected]="row.id === store.selectedId()"
+          class="measure-log__item"
+          [class.measure-log__item_selected]="row.id === store.selectedId()"
           (click)="store.selectMeasurement({ id: row.id })"
         >
           <button
-            class="item__remove"
+            class="measure-log__remove"
             type="button"
             title="Удалить"
             (click)="$event.stopPropagation(); store.remove({ id: row.id })"
           >
             ×
           </button>
-          <div class="len">#{{ row.id }} · {{ row.length }} м</div>
-          <div class="sub">Горизонталь {{ row.horizontal }}</div>
-          <div class="sub">Высота {{ row.height }} м</div>
-          <div class="pts">A ({{ row.ax }}, {{ row.ay }}, {{ row.az }})</div>
-          <div class="pts">B ({{ row.bx }}, {{ row.by }}, {{ row.bz }})</div>
+          <div class="measure-log__length">#{{ row.id }} · {{ row.length }} м</div>
+          <div class="measure-log__sub">Горизонталь {{ row.horizontal }}</div>
+          <div class="measure-log__sub">Высота {{ row.height }} м</div>
+          <div class="measure-log__points">A ({{ row.ax }}, {{ row.ay }}, {{ row.az }})</div>
+          <div class="measure-log__points">B ({{ row.bx }}, {{ row.by }}, {{ row.bz }})</div>
         </li>
       }
     </ol>

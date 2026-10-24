@@ -1,4 +1,4 @@
-.controls-hint {
+.control-hint {
   position: absolute;
   top: 8px;
   left: 8px;
@@ -6,11 +6,11 @@
   pointer-events: none;
 }
 
-.title {
+.control-hint__title {
   text-decoration: underline;
 }
 
-ul {
+.control-hint__list {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -19,12 +19,12 @@ ul {
   gap: 8px;
 }
 
-li {
+.control-hint__item {
   display: flex;
   align-items: baseline;
   gap: 6px;
 }
 
-li > b {
+.control-hint__action {
   flex: 0 0 110px;
 }

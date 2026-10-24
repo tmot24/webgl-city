@@ -2,8 +2,8 @@
   @for (option of modes; track option.id) {
     <button
       type="button"
-      class="tab"
-      [class.active]="option.id === store.mode()"
+      class="mode-toolbar__tab"
+      [class.mode-toolbar__tab_active]="option.id === store.mode()"
       (click)="store.setMode({ mode: option.id })"
     >
       {{ option.label }}

@@ -25,9 +25,8 @@ import { SceneViewport } from '../../render/scene-viewport';
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint, RoutePanel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-scene',
-  styleUrl: './scene.css',
   templateUrl: './scene.html',
-  host: { '(window:keydown.escape)': 'onEscape($event)' },
+  host: { class: 'scene', '(window:keydown.escape)': 'onEscape($event)' },
   providers: [SceneViewport, SceneStore, SceneModStore, BuildingStore, MeasureStore, RouteStore],
 })
 export class Scene {

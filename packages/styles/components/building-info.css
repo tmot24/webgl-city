@@ -1,0 +1,7 @@
+.building-info {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 210px;
+  pointer-events: none;
+}

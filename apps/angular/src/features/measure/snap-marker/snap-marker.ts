@@ -4,7 +4,6 @@ import { injectMeasureOverlay } from '../inject-measure-overlay';
 @Component({
   imports: [],
   selector: 'app-snap-marker',
-  styleUrl: './snap-marker.css',
   templateUrl: './snap-marker.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

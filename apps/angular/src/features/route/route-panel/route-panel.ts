@@ -9,7 +9,6 @@ export interface RouteInfo {
 @Component({
   imports: [],
   selector: 'app-route-panel',
-  styleUrl: './route-panel.css',
   templateUrl: './route-panel.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

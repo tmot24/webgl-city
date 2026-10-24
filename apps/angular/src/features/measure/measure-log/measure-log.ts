@@ -6,7 +6,6 @@ import { MeasureStore } from '../measure.store';
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-measure-log',
-  styleUrl: './measure-log.css',
   templateUrl: './measure-log.html',
 })
 export class MeasureLog {

@@ -1,4 +1,4 @@
-.fps {
+.fps-counter {
   position: fixed;
   bottom: 8px;
   left: 8px;
@@ -6,7 +6,7 @@
   padding: 2px 6px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  color: var(--color-text);
   font-family: var(--font-mono);
   font-size: var(--font-secondary);
   pointer-events: none;

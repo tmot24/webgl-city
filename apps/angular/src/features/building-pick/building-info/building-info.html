@@ -1,7 +1,7 @@
 @if (info(); as build) {
-  <div class="ui-panel build-info">
+  <div class="ui-panel building-info">
     <div class="ui-panel__title">Здание #{{ build.id }}</div>
-    <dl>
+    <dl class="ui-stats">
       <dt>Высота</dt>
       <dd>{{ build.height }}</dd>
       <dt>Основание</dt>
@@ -15,7 +15,7 @@
     </dl>
   </div>
 } @else {
-  <div class="ui-panel build-info">
+  <div class="ui-panel building-info">
     <div class="ui-panel__hint">Выберите здание</div>
   </div>
 }

@@ -6,7 +6,6 @@ import { SceneModStore } from '../scene-mod.store';
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-mode-toolbar',
-  styleUrl: './mode-toolbar.css',
   templateUrl: './mode-toolbar.html',
 })
 export class ModeToolbar {

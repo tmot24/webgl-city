@@ -6,8 +6,8 @@ import { FpsCounter } from './fps-counter/fps-counter';
   imports: [RouterOutlet, FpsCounter],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  styleUrl: './app.css',
   templateUrl: './app.html',
+  host: { class: 'app' },
 })
 export class App {
   protected readonly title = signal('webgl-city');

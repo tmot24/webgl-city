@@ -5,7 +5,6 @@ import { BuildingStore } from '../building.store';
   imports: [],
   selector: 'app-building-info',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrl: './building-info.css',
   templateUrl: './building-info.html',
 })
 export class BuildingInfo {

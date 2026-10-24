@@ -1,0 +1,23 @@
+.route-panel {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 210px;
+  pointer-events: auto;
+}
+
+.route-panel__reset {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}

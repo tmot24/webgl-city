@@ -13,7 +13,6 @@ import { runAnimationFrame } from '@webgl-city/core/gl/run-animation-frame';
   imports: [],
   selector: 'app-fps-counter',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrl: './fps-counter.css',
   templateUrl: './fps-counter.html',
 })
 export class FpsCounter {
