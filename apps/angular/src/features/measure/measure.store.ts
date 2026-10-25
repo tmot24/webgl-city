@@ -1,16 +1,12 @@
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { vec3 } from 'gl-matrix';
 import { computed } from '@angular/core';
+import { MeasurePoint } from '@webgl-city/core/measure/create-measure-picker';
 
 export interface Measurement {
   id: number;
   a: vec3; // первая точка (мировые координаты)
   b: vec3; // вторая точка
-}
-
-export interface MeasureHover {
-  point: vec3;
-  snapped: boolean;
 }
 
 // Поля с "_" - приватные: снаружи стора их не видно
@@ -69,7 +65,7 @@ export const MeasureStore = signalStore(
       }));
     },
 
-    hover({ hit }: { hit: MeasureHover | null }) {
+    hover({ hit }: { hit: MeasurePoint | null }) {
       patchState(store, {
         // маркер залипания (даже до первого клика)
         snapPoint: hit?.snapped ? hit.point : null,

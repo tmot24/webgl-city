@@ -1,17 +1,13 @@
 import { mat4, vec3 } from 'gl-matrix';
 import { ElementRef, inject, Signal } from '@angular/core';
 import { RoadGrid } from '@webgl-city/core/city/generate-city.types';
-import { GroundBounds, intersectGround } from '@webgl-city/core/ray/intersect-ground';
+import { GroundBounds } from '@webgl-city/core/ray/intersect-ground';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
 import { Ray } from '@webgl-city/core/ray/screen-point-to-ray';
-import { snapToNearest } from '@webgl-city/core/ray/snap-to-nearest';
-import { buildingCorners } from '@webgl-city/core/city/building-corners';
-import { SNAP_PIXEL_THRESHOLD } from '@webgl-city/core/constants';
-import { roadSnapCandidates } from '@webgl-city/core/city/road/road-snap-candidates';
 import { BuildingBox } from '@webgl-city/core/city/building-box';
-import { nearestBuildingHit } from '@webgl-city/core/city/nearest-building-hit';
 import { MeasureStore } from './measure.store';
 import { SceneModStore } from '../mode/scene-mod.store';
+import { createMeasurePicker } from '@webgl-city/core/measure/create-measure-picker';
 
 interface InjectMeasure {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -24,7 +20,7 @@ interface InjectMeasure {
 }
 
 /**
- * Режим измерения
+ * Режим измерения: клик ставит точку, движение показывает прилипание под курсором.
  * */
 export function injectMeasure({
   canvasRef,
@@ -35,49 +31,16 @@ export function injectMeasure({
   groundBounds,
 }: InjectMeasure) {
   const store = inject(MeasureStore);
+  const picker = createMeasurePicker({ buildingBoxes, road, groundBounds });
 
-  // Ближайшая поверхность вдоль луча + какое здание задето
-  const hitSurface = ({ origin, dirNorm }: Ray) => {
-    const groundHit = intersectGround({ origin, dirNorm, bounds: groundBounds });
-    const buildingHit = nearestBuildingHit({ ray: { origin, dirNorm }, buildingBoxes });
-    // dirNorm нормализован => обе distance в метрах вдоль одного луча и сравнимы.
-    // Нет земли под лучом => Infinity: любое здание ближе.
-    const groundDistance = groundHit?.distance ?? Infinity;
-
-    if (buildingHit && buildingHit.distance < groundDistance) {
-      return {
-        point: vec3.scaleAndAdd(vec3.create(), origin, dirNorm, buildingHit.distance),
-        building: buildingHit.building,
-      };
-    }
-    if (groundHit) {
-      return {
-        point: groundHit.point,
-        building: null,
-      };
-    }
-
-    return null;
-  };
-
-  // Финальная точка с учётом прилипания: если задели здание - пробуем прилипнуть к его 8 углам
-  const resolvePoint = ({ origin, dirNorm }: Ray) => {
-    const hit = hitSurface({ origin, dirNorm });
-    if (!hit) return null;
+  const resolvePoint = (ray: Ray) => {
     const canvas = canvasRef().nativeElement;
-    // навёл на дом => его 8 углов; навёл на землю => перекрёсток + его 4 угла
-    const candidates = hit.building ? buildingCorners(hit.building) : roadSnapCandidates({ road, point: hit.point });
-
-    const snapped = snapToNearest({
-      candidates,
-      cursorWorld: hit.point,
+    return picker.resolve({
+      ray,
       viewProjection: viewProjection(),
-      width: canvas.clientWidth,
-      height: canvas.clientHeight,
-      threshold: SNAP_PIXEL_THRESHOLD,
+      width: canvas.width,
+      height: canvas.height,
     });
-
-    return snapped ? { point: snapped, snapped: true } : { point: hit.point, snapped: false };
   };
 
   injectCanvasPointer({

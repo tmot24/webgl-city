@@ -1,7 +1,7 @@
 import { afterNextRender, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
-import { Ray, screenPointToRay } from '@webgl-city/core/ray/screen-point-to-ray';
-import { CLICK_MOVE_THRESHOLD } from '@webgl-city/core/constants';
+import { Ray } from '@webgl-city/core/ray/screen-point-to-ray';
+import { bindCanvasPointer } from '@webgl-city/core/interaction/bind-canvas-pointer';
 
 interface InjectCanvasPointer {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -14,6 +14,9 @@ interface InjectCanvasPointer {
   onMove?: (ray: Ray) => void;
 }
 
+/**
+ * Angular-адаптер над bindCanvasPointer: сигналы камеры читаются в момент события.
+ * */
 export function injectCanvasPointer({
   canvasRef,
   viewProjection,
@@ -25,40 +28,13 @@ export function injectCanvasPointer({
   const destroyRef = inject(DestroyRef);
 
   afterNextRender(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-    destroyRef.onDestroy(() => controller.abort());
-
-    const canvas = canvasRef().nativeElement;
-    let downX = 0;
-    let downY = 0;
-
-    const rayFrom = (event: PointerEvent): Ray | null => {
-      const rect = canvas.getBoundingClientRect();
-      return screenPointToRay({ event, rect, viewProjection: viewProjection(), eyePoint: eyePoint() });
-    };
-
-    const onDown = (event: PointerEvent) => {
-      if (event.button !== 0) return; // только ЛКМ
-      downX = event.clientX;
-      downY = event.clientY;
-    };
-    const onUp = (event: PointerEvent) => {
-      if (event.button !== 0) return;
-      if (!enabled()) return;
-      if (Math.hypot(event.clientX - downX, event.clientY - downY) > CLICK_MOVE_THRESHOLD) return;
-
-      const ray = rayFrom(event);
-      if (ray) onClick(ray);
-    };
-    const onPointerMove = (event: PointerEvent) => {
-      if (!enabled()) return;
-      const ray = rayFrom(event);
-      if (ray) onMove?.(ray);
-    };
-
-    canvas.addEventListener('pointerdown', onDown, { signal });
-    canvas.addEventListener('pointerup', onUp, { signal });
-    if (onMove) canvas.addEventListener('pointermove', onPointerMove, { signal });
+    const unbind = bindCanvasPointer({
+      canvas: canvasRef().nativeElement,
+      getCamera: () => ({ viewProjection: viewProjection(), eye: eyePoint() }),
+      isEnabled: enabled,
+      onClick,
+      onMove,
+    });
+    destroyRef.onDestroy(unbind);
   });
 }
