@@ -1,13 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { injectMeasureOverlay } from '../inject-measure-overlay';
 
-// css пиксели
-export interface MeasureLabelData {
-  x: number;
-  y: number;
-  text: string;
-}
-
 @Component({
   imports: [],
   selector: 'app-measure-label',

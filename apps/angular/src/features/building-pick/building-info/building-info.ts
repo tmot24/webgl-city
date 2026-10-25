@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { BuildingStore } from '../building.store';
+import { toBuildingInfo } from '@webgl-city/core/city/building-info';
 
 @Component({
   imports: [],
@@ -11,17 +12,7 @@ export class BuildingInfo {
   protected readonly store = inject(BuildingStore);
 
   protected readonly info = computed(() => {
-    const build = this.store.selected();
-    if (!build) return null;
-    return {
-      id: build.id,
-      height: build.height.toFixed(2),
-      width: build.width.toFixed(2),
-      depth: build.depth.toFixed(2),
-      area: (build.width * build.depth).toFixed(2),
-      floors: Math.max(1, Math.round(build.height / 3.5)),
-      x: build.cx.toFixed(0),
-      z: build.cz.toFixed(0),
-    };
+    const building = this.store.selected();
+    return building ? toBuildingInfo({ building }) : null;
   });
 }

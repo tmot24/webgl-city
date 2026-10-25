@@ -1,7 +1,7 @@
-import { ElementRef, Injectable, signal, Signal } from '@angular/core';
-import { mat4, vec3 } from 'gl-matrix';
-import { ScreenPoint, worldToScreen } from '@webgl-city/core/ray/world-to-screen';
+import { computed, ElementRef, Injectable, signal, Signal } from '@angular/core';
+import { mat4 } from 'gl-matrix';
 import { CanvasSize } from '@webgl-city/core/dom/observe-canvas-size';
+import { createScreenProjector, ScreenProjector } from '@webgl-city/core/ray/create-screen-projector';
 
 interface ViewportSource {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
@@ -21,20 +21,19 @@ export class SceneViewport {
     this.source.set(source);
   }
 
-  // Проекция
-  // Мир => CSS-пиксели canvas. Реактивно (камера, ресайз), если читать внутри computed,
-  // null - viewport ещё не подключён или точка за камерой
-  project({ point }: { point: vec3 }): ScreenPoint | null {
+  // Пересоздаётся при движении камеры и ресайзе; null - viewport ещё не подключён
+  readonly project = computed((): ScreenProjector | null => {
     const source = this.source();
+
     if (!source) return null;
 
     source.size(); // зависимость: пересчёт при ресайзе (значение из clientWidth)
     const canvas = source.canvasRef().nativeElement;
-    return worldToScreen({
-      point,
+
+    return createScreenProjector({
       viewProjection: source.viewProjection(),
       width: canvas.clientWidth,
       height: canvas.clientHeight,
     });
-  }
+  });
 }

@@ -2,12 +2,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { vec3 } from 'gl-matrix';
 import { computed } from '@angular/core';
 import { MeasurePoint } from '@webgl-city/core/measure/create-measure-picker';
-
-export interface Measurement {
-  id: number;
-  a: vec3; // первая точка (мировые координаты)
-  b: vec3; // вторая точка
-}
+import { Measurement } from '@webgl-city/core/measure/measurement';
 
 // Поля с "_" - приватные: снаружи стора их не видно
 interface MeasureState {

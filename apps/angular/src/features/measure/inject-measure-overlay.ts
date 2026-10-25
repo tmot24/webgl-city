@@ -1,9 +1,8 @@
 import { computed, inject, Signal } from '@angular/core';
-import { vec3 } from 'gl-matrix';
-import { MeasureLabelData } from './measure-label/measure-label';
 import { ScreenPoint } from '@webgl-city/core/ray/world-to-screen';
 import { MeasureStore } from './measure.store';
 import { SceneViewport } from '../../render/scene-viewport';
+import { MeasureLabelData, toMeasureLabel } from '@webgl-city/core/measure/measurement';
 
 export interface MeasureOverlay {
   label: Signal<MeasureLabelData | null>;
@@ -14,28 +13,22 @@ export interface MeasureOverlay {
  * Экранные проекции измерения (подпись длины, маркер залипания).
  * Не в сторе: зависят от камеры и размера canvas - это слой представления, а не состояния
  * */
-export function injectMeasureOverlay() {
+export function injectMeasureOverlay(): MeasureOverlay {
   const store = inject(MeasureStore);
   const viewport = inject(SceneViewport);
 
   const label = computed((): MeasureLabelData | null => {
     const segment = store.segment();
-    if (!segment) return null;
-    const { a, b } = segment;
+    const project = viewport.project();
 
-    const screenPoint = viewport.project({ point: vec3.lerp(vec3.create(), a, b, 0.5) });
-    if (!screenPoint) return null;
-
-    return {
-      x: screenPoint.x,
-      y: screenPoint.y,
-      text: `${vec3.distance(a, b).toFixed(2)} м`,
-    };
+    return segment && project ? toMeasureLabel({ segment, project }) : null;
   });
 
   const snapMarker = computed(() => {
     const point = store.snapPoint();
-    return point ? viewport.project({ point }) : null;
+    const project = viewport.project();
+
+    return point && project ? project({ point }) : null;
   });
 
   return { label, snapMarker };
