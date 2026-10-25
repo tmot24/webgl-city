@@ -1,52 +1,32 @@
-import { mat4, vec3 } from 'gl-matrix';
-import { ElementRef, inject, Signal } from '@angular/core';
-import { RoadGrid } from '@webgl-city/core/city/generate-city.types';
-import { GroundBounds } from '@webgl-city/core/ray/intersect-ground';
+import { inject } from '@angular/core';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
 import { Ray } from '@webgl-city/core/ray/screen-point-to-ray';
-import { BuildingBox } from '@webgl-city/core/city/building-box';
 import { MeasureStore } from './measure.store';
 import { SceneModStore } from '../mode/scene-mod.store';
 import { createMeasurePicker } from '@webgl-city/core/measure/create-measure-picker';
-
-interface InjectMeasure {
-  canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
-  buildingBoxes: BuildingBox[];
-  road: RoadGrid;
-  viewProjection: () => mat4;
-  eyePoint: Signal<vec3>;
-  // Прямоугольник земли
-  groundBounds: GroundBounds;
-}
+import { SceneViewport } from '../../render/scene-viewport';
+import { CITY_SCENE } from '../../app/scene/city-scene.token';
 
 /**
  * Режим измерения: клик ставит точку, движение показывает прилипание под курсором.
  * */
-export function injectMeasure({
-  canvasRef,
-  buildingBoxes,
-  road,
-  viewProjection,
-  eyePoint,
-  groundBounds,
-}: InjectMeasure) {
+export function injectMeasure() {
   const store = inject(MeasureStore);
-  const picker = createMeasurePicker({ buildingBoxes, road, groundBounds });
+  const viewport = inject(SceneViewport);
+  const { buildingBoxes, city, groundBounds } = inject(CITY_SCENE);
+  const picker = createMeasurePicker({ buildingBoxes, road: city.road, groundBounds });
 
   const resolvePoint = (ray: Ray) => {
-    const canvas = canvasRef().nativeElement;
+    const canvas = viewport.canvas();
     return picker.resolve({
       ray,
-      viewProjection: viewProjection(),
+      viewProjection: viewport.viewProjection(),
       width: canvas.width,
       height: canvas.height,
     });
   };
 
   injectCanvasPointer({
-    canvasRef,
-    viewProjection,
-    eyePoint,
     enabled: inject(SceneModStore).is.measure,
     onClick: (ray) => {
       const resolved = resolvePoint(ray);

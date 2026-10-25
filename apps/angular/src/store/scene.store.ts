@@ -4,7 +4,7 @@ import { SceneModStore } from '../features/mode/scene-mod.store';
 import { BuildingStore } from '../features/building-pick/building.store';
 import { MeasureStore } from '../features/measure/measure.store';
 import { RouteStore } from '../features/route/route.store';
-import { vec3 } from 'gl-matrix';
+import { selectActivePolyline } from '@webgl-city/core/scene/active-polyline';
 import { SceneMode } from '@webgl-city/core/scene/scene-mode';
 
 export const SceneStore = signalStore(
@@ -15,18 +15,9 @@ export const SceneStore = signalStore(
     _route: inject(RouteStore),
   })),
   withComputed(({ _mode, _measure, _route }) => ({
-    activePolyline: computed((): vec3[] | null => {
-      switch (_mode.mode()) {
-        case 'measure': {
-          const segment = _measure.segment();
-          return segment ? [segment.a, segment.b] : null;
-        }
-        case 'route':
-          return _route.path();
-        default:
-          return null;
-      }
-    }),
+    activePolyline: computed(() =>
+      selectActivePolyline({ mode: _mode.mode(), segment: _measure.segment(), routePath: _route.path() }),
+    ),
   })),
   withMethods(({ _mode, _building, _measure, _route }) => {
     const cancelHandlers: Record<SceneMode, () => void> = {

@@ -8,20 +8,18 @@ import {
   signal,
   Signal,
 } from '@angular/core';
-import { InstanceData } from '@webgl-city/core/city/build-instance-data';
 import { vec3 } from 'gl-matrix';
 import { injectCanvasSize } from './inject-canvas-size';
 import { injectOrbitCamera } from '../camera/inject-orbit-camera';
 import { createViewProjectionMatrix } from '@webgl-city/core/math/create-view-projection-matrix';
 import { Building } from '@webgl-city/core/city/generate-city.types';
-import { CityFrame, CityRenderer, CitySurface, createCityRenderer } from '@webgl-city/core/render/create-city-renderer';
-import { CITY_CAMERA } from '@webgl-city/core/city/city-default';
+import { CityFrame, CityRenderer, createCityRenderer } from '@webgl-city/core/render/create-city-renderer';
+import { CITY_CAMERA, CITY_COLORS } from '@webgl-city/core/city/city-default';
+import { CITY_SCENE } from '../app/scene/city-scene.token';
+import { SceneViewport } from './scene-viewport';
 
 interface InjectCityRender {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
-  instanceData: InstanceData;
-  ground: CitySurface;
-  road: CitySurface;
   // направление НА свет (нормализованное)
   lightDirectionNorm: Signal<vec3>;
   selectedBuilding: Signal<Building | null>;
@@ -36,9 +34,6 @@ interface InjectCityRender {
  * */
 export function injectCityRender({
   canvasRef,
-  instanceData,
-  ground,
-  road,
   // солнце сверху-сбоку по умолчанию (направление НА свет), нормализуем
   lightDirectionNorm,
   selectedBuilding,
@@ -48,6 +43,7 @@ export function injectCityRender({
   const size = injectCanvasSize({ canvasRef });
   const castShadows = signal(true);
   const destroyRef = inject(DestroyRef);
+  const { instanceData, groundGeometry, roadGeometry } = inject(CITY_SCENE);
 
   const { viewMatrix, center, distance, eyePoint } = injectOrbitCamera({
     canvasRef,
@@ -81,12 +77,19 @@ export function injectCityRender({
     polyline: activePolyline(),
   }));
 
+  inject(SceneViewport).connect({ canvasRef, viewProjection, eyePoint, size });
+
   let renderer: CityRenderer | null = null;
 
   // ОДИН РАЗ: GL-ресурсы и первый кадр сразу
   afterNextRender({
     write: () => {
-      renderer = createCityRenderer({ canvas: canvasRef().nativeElement, instanceData, ground, road });
+      renderer = createCityRenderer({
+        canvas: canvasRef().nativeElement,
+        instanceData,
+        ground: { geometry: groundGeometry, color: CITY_COLORS.ground },
+        road: { geometry: roadGeometry, color: CITY_COLORS.road },
+      });
       destroyRef.onDestroy(() => renderer?.dispose());
       renderer.render(frame());
     },
@@ -102,5 +105,5 @@ export function injectCityRender({
     },
   });
 
-  return { lightDirection: lightDirectionNorm, castShadows, viewProjection, eyePoint, size };
+  return { castShadows };
 }

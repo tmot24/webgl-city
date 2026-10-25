@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { FpsCounter } from './fps-counter/fps-counter';
 
@@ -9,6 +9,4 @@ import { FpsCounter } from './fps-counter/fps-counter';
   templateUrl: './app.html',
   host: { class: 'app' },
 })
-export class App {
-  protected readonly title = signal('webgl-city');
-}
+export class App {}

@@ -19,7 +19,8 @@ import { RouteStore } from '../../features/route/route.store';
 import { injectMeasure } from '../../features/measure/inject-measure';
 import { injectRoute } from '../../features/route/inject-route';
 import { SceneViewport } from '../../render/scene-viewport';
-import { CITY_COLORS, DEFAULT_LIGHT_DIRECTION } from '@webgl-city/core/city/city-default';
+import { DEFAULT_LIGHT_DIRECTION } from '@webgl-city/core/city/city-default';
+import { CITY_SCENE } from './city-scene.token';
 
 @Component({
   imports: [BuildingInfo, ModeToolbar, MeasureLog, MeasureLabel, SnapMarker, ControlHint, ModeHint, RoutePanel],
@@ -27,57 +28,39 @@ import { CITY_COLORS, DEFAULT_LIGHT_DIRECTION } from '@webgl-city/core/city/city
   selector: 'app-scene',
   templateUrl: './scene.html',
   host: { class: 'scene', '(window:keydown.escape)': 'onEscape($event)' },
-  providers: [SceneViewport, SceneStore, SceneModStore, BuildingStore, MeasureStore, RouteStore],
+  providers: [
+    // Город строится один раз на экземпляр сцены
+    { provide: CITY_SCENE, useFactory: buildCityScene },
+    SceneViewport,
+    SceneStore,
+    SceneModStore,
+    BuildingStore,
+    MeasureStore,
+    RouteStore,
+  ],
 })
 export class Scene {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
-
-  readonly lightDirectionNorm = signal(DEFAULT_LIGHT_DIRECTION);
 
   protected readonly sceneStore = inject(SceneStore);
   protected readonly modeStore = inject(SceneModStore);
   protected readonly buildingStore = inject(BuildingStore);
 
-  constructor() {
-    const { city, instanceData, groundBounds, groundGeometry, roadGeometry, buildingBoxes } = buildCityScene();
+  readonly lightDirectionNorm = signal(DEFAULT_LIGHT_DIRECTION);
 
-    const { viewProjection, eyePoint, size } = injectCityRender({
+  constructor() {
+    // Рендер первым: он создаёт камеру и подключает SceneViewport, фичи берут её из DI
+    injectCityRender({
       canvasRef: this.canvasRef,
       lightDirectionNorm: this.lightDirectionNorm,
-      instanceData,
       selectedBuilding: this.buildingStore.selected,
       activePolyline: this.sceneStore.activePolyline,
-      ground: { geometry: groundGeometry, color: CITY_COLORS.ground },
-      road: { geometry: roadGeometry, color: CITY_COLORS.road },
       isHighlightBuild: this.modeStore.is.building,
     });
 
-    // Камера для UI-оверлея (проекция мир => экран в дочерних фичах)
-    inject(SceneViewport).connect({ canvasRef: this.canvasRef, viewProjection, size });
-
-    injectBuildingPicker({
-      canvasRef: this.canvasRef,
-      buildingBoxes,
-      viewProjection,
-      eyePoint,
-    });
-
-    injectMeasure({
-      canvasRef: this.canvasRef,
-      buildingBoxes,
-      road: city.road,
-      viewProjection,
-      eyePoint,
-      groundBounds,
-    });
-
-    injectRoute({
-      canvasRef: this.canvasRef,
-      viewProjection,
-      eyePoint,
-      road: city.road,
-      groundBounds,
-    });
+    injectBuildingPicker();
+    injectMeasure();
+    injectRoute();
   }
 
   // Esc сбрасывает текущее действие режима

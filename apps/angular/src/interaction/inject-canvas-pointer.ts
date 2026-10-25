@@ -1,12 +1,9 @@
-import { afterNextRender, DestroyRef, ElementRef, inject, Signal } from '@angular/core';
-import { mat4, vec3 } from 'gl-matrix';
+import { afterNextRender, DestroyRef, inject, Signal } from '@angular/core';
 import { Ray } from '@webgl-city/core/ray/screen-point-to-ray';
 import { bindCanvasPointer } from '@webgl-city/core/interaction/bind-canvas-pointer';
+import { SceneViewport } from '../render/scene-viewport';
 
 interface InjectCanvasPointer {
-  canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
-  viewProjection: () => mat4;
-  eyePoint: Signal<vec3>;
   enabled: Signal<boolean>;
   // валидный клик (не перетаскивание) => строит луч; пересечение - дело фичи
   onClick: (ray: Ray) => void;
@@ -15,22 +12,17 @@ interface InjectCanvasPointer {
 }
 
 /**
- * Angular-адаптер над bindCanvasPointer: сигналы камеры читаются в момент события.
+ * Angular-адаптер над bindCanvasPointer: canvas и камера - из SceneViewport,
+ * читаются в момент события.
  * */
-export function injectCanvasPointer({
-  canvasRef,
-  viewProjection,
-  eyePoint,
-  enabled,
-  onClick,
-  onMove,
-}: InjectCanvasPointer) {
+export function injectCanvasPointer({ enabled, onClick, onMove }: InjectCanvasPointer) {
   const destroyRef = inject(DestroyRef);
+  const viewport = inject(SceneViewport);
 
   afterNextRender(() => {
     const unbind = bindCanvasPointer({
-      canvas: canvasRef().nativeElement,
-      getCamera: () => ({ viewProjection: viewProjection(), eye: eyePoint() }),
+      canvas: viewport.canvas(),
+      getCamera: () => ({ viewProjection: viewport.viewProjection(), eye: viewport.eyePoint() }),
       isEnabled: enabled,
       onClick,
       onMove,

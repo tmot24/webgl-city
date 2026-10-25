@@ -42,3 +42,6 @@ export function buildCityScene() {
     buildingBoxes,
   };
 }
+
+// Всё, что строится один раз на сцену: город, геометрия, коробки зданий, границы земли
+export type CityScene = ReturnType<typeof buildCityScene>;
