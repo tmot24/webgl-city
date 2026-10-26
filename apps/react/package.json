@@ -1,0 +1,27 @@
+{
+  "name": "@webgl-city/react",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@webgl-city/core": "*",
+    "@webgl-city/styles": "*",
+    "gl-matrix": "^3.4.4",
+    "mobx": "^7.1.1",
+    "mobx-react-lite": "^5.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.5"
+  }
+}

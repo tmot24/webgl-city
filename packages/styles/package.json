@@ -6,6 +6,7 @@
     ".": {
       "style": "./index.css",
       "default": "./index.css"
-    }
+    },
+    "./index.css": "./index.css"
   }
 }

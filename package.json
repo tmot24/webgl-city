@@ -9,12 +9,11 @@
   "scripts": {
     "start:angular": "npm run start -w @webgl-city/angular",
     "build:angular": "npm run build -w @webgl-city/angular",
+    "start:react": "npm run start -w @webgl-city/react",
+    "build:react": "npm run build -w @webgl-city/react",
     "typecheck:core": "npm run typecheck -w @webgl-city/core"
   },
   "devDependencies": {
     "prettier": "^3.8.1"
-  },
-  "dependencies": {
-    "@webgl-city/angular": "^0.0.0"
   }
 }
