@@ -54,7 +54,7 @@ export function orbitEye({ state }: { state: OrbitState }): vec3 {
 }
 
 // Матрица вида: lookAt из позиции камеры в центр орбиты
-export function orbitViewMatrix({ state, up = vec3.fromValues(0, 1, 0) }: { state: OrbitState; up?: vec3 }) {
+export function orbitViewMatrix({ state, up = vec3.fromValues(0, 1, 0) }: { state: OrbitState; up?: vec3 }): mat4 {
   return mat4.lookAt(mat4.create(), orbitEye({ state }), state.center, up);
 }
 
