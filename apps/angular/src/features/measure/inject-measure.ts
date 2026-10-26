@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
 import { Ray } from '@webgl-city/core/ray/screen-point-to-ray';
 import { MeasureStore } from './measure.store';
-import { SceneModStore } from '../mode/scene-mod.store';
+import { SceneModeStore } from '../mode/scene-mode.store';
 import { createMeasurePicker } from '@webgl-city/core/measure/create-measure-picker';
 import { SceneViewport } from '../../render/scene-viewport';
 import { CITY_SCENE } from '../../app/scene/city-scene.token';
@@ -27,7 +27,7 @@ export function injectMeasure() {
   };
 
   injectCanvasPointer({
-    enabled: inject(SceneModStore).is.measure,
+    enabled: inject(SceneModeStore).is.measure,
     onClick: (ray) => {
       const resolved = resolvePoint(ray);
       if (!resolved) return; // клик в небо

@@ -1,6 +1,6 @@
 import { signalStore, withComputed, withMethods, withProps } from '@ngrx/signals';
 import { computed, inject } from '@angular/core';
-import { SceneModStore } from '../features/mode/scene-mod.store';
+import { SceneModeStore } from '../features/mode/scene-mode.store';
 import { BuildingStore } from '../features/building-pick/building.store';
 import { MeasureStore } from '../features/measure/measure.store';
 import { RouteStore } from '../features/route/route.store';
@@ -9,7 +9,7 @@ import { SceneMode } from '@webgl-city/core/scene/scene-mode';
 
 export const SceneStore = signalStore(
   withProps(() => ({
-    _mode: inject(SceneModStore),
+    _mode: inject(SceneModeStore),
     _building: inject(BuildingStore),
     _measure: inject(MeasureStore),
     _route: inject(RouteStore),

@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { injectCanvasPointer } from '../../interaction/inject-canvas-pointer';
 import { RouteStore } from './route.store';
-import { SceneModStore } from '../mode/scene-mod.store';
+import { SceneModeStore } from '../mode/scene-mode.store';
 import { createRoutePlanner } from '@webgl-city/core/route/create-route-planner';
 import { CITY_SCENE } from '../../app/scene/city-scene.token';
 
@@ -15,7 +15,7 @@ export function injectRoute() {
   const planner = createRoutePlanner({ road: city.road, groundBounds });
 
   injectCanvasPointer({
-    enabled: inject(SceneModStore).is.route,
+    enabled: inject(SceneModeStore).is.route,
     onClick: (ray) => {
       const node = planner.nodeAt({ ray });
       if (node === null) return; // клик мимо земли

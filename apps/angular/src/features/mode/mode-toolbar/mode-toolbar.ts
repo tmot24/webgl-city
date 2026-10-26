@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { SCENE_MODES } from '@webgl-city/core/scene/scene-mode';
-import { SceneModStore } from '../scene-mod.store';
+import { SceneModeStore } from '../scene-mode.store';
 
 @Component({
   imports: [],
@@ -10,5 +10,5 @@ import { SceneModStore } from '../scene-mod.store';
 })
 export class ModeToolbar {
   protected readonly modes = SCENE_MODES;
-  protected readonly store = inject(SceneModStore);
+  protected readonly store = inject(SceneModeStore);
 }

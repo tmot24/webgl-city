@@ -6,6 +6,9 @@ import { ControlHint } from '../control-hint/control-hint';
 import { useCanvasSize } from '../../render/use-canvas-size';
 import { useOrbitControls } from '../../camera/use-orbit-controls';
 import { useCityRender } from '../../render/use-city-render';
+import { SceneStoreContext } from '../../store/scene-store.context';
+import { ModeHint } from '../../features/mode/mode-hint/mode-hint';
+import { ModeToolbar } from '../../features/mode/mode-toolbar/mode-toolbar';
 
 export function Scene() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -19,11 +22,15 @@ export function Scene() {
   useOrbitControls({ canvasRef, camera: viewport.camera });
 
   return (
-    <div className="scene">
-      <canvas ref={canvasRef} className="scene__canvas" />
-      <div className="scene__overlay">
-        <ControlHint />
+    <SceneStoreContext value={store}>
+      <div className="scene">
+        <canvas ref={canvasRef} className="scene__canvas" />
+        <div className="scene__overlay">
+          <ControlHint />
+          <ModeToolbar />
+          <ModeHint />
+        </div>
       </div>
-    </div>
+    </SceneStoreContext>
   );
 }

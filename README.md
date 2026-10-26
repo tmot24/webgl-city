@@ -71,7 +71,7 @@ shared/        переиспользуемое ядро: математика, 
 
 | Стор | Что хранит |
 | --- | --- |
-| `SceneModStore` | активный режим и флаги `is.building` / `is.measure` / `is.route` |
+| `SceneModeStore` | активный режим и флаги `is.building` / `is.measure` / `is.route` |
 | `BuildingStore` | выбранное здание |
 | `MeasureStore` | измерения, незавершённый отрезок, точка прилипания |
 | `RouteStore` | точки A/B и найденный путь |

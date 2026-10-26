@@ -63,7 +63,7 @@ export class OrbitCamera {
     return orbitViewMatrix({ state: this.state, up: this.up });
   }
 
-  // при повороте ссылка center не меняется, поэтому этот computed не оповещает подписчиков (деструктуризация)
+  // при повороте ссылка center не меняется, поэтому этот computed не оповещает подписчиков (...спред)
   get center(): vec3 {
     return this.state.center;
   }

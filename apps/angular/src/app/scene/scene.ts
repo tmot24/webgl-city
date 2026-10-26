@@ -12,7 +12,7 @@ import { isEditableTarget } from '@webgl-city/core/dom/is-editable-target';
 import { RoutePanel } from '../../features/route/route-panel/route-panel';
 import { buildCityScene } from '@webgl-city/core/city/build-city-scene';
 import { SceneStore } from '../../store/scene.store';
-import { SceneModStore } from '../../features/mode/scene-mod.store';
+import { SceneModeStore } from '../../features/mode/scene-mode.store';
 import { BuildingStore } from '../../features/building-pick/building.store';
 import { MeasureStore } from '../../features/measure/measure.store';
 import { RouteStore } from '../../features/route/route.store';
@@ -33,7 +33,7 @@ import { CITY_SCENE } from './city-scene.token';
     { provide: CITY_SCENE, useFactory: buildCityScene },
     SceneViewport,
     SceneStore,
-    SceneModStore,
+    SceneModeStore,
     BuildingStore,
     MeasureStore,
     RouteStore,
@@ -43,7 +43,7 @@ export class Scene {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
 
   protected readonly sceneStore = inject(SceneStore);
-  protected readonly modeStore = inject(SceneModStore);
+  protected readonly modeStore = inject(SceneModeStore);
   protected readonly buildingStore = inject(BuildingStore);
 
   readonly lightDirectionNorm = signal(DEFAULT_LIGHT_DIRECTION);
