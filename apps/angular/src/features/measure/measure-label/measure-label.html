@@ -1,5 +1,5 @@
 @if (overlay.label(); as measureLabel) {
-  <div class="measure-label" [style.left.px]="measureLabel.x" [style.top.px]="measureLabel.y">
+  <div class="measure-label" [style.--anchor-x.px]="measureLabel.x" [style.--anchor-y.px]="measureLabel.y">
     {{ measureLabel.text }}
   </div>
 }

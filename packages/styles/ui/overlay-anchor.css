@@ -1,0 +1,18 @@
+/*
+ * Точка привязки метки над сценой (CSS-пиксели canvas): задаёт код, читает transform в стилях метки.
+ * Регистрация через @property: тип <length>, значение по умолчанию, без наследования детям.
+ */
+@property --anchor-x {
+  /* браузер проверит, если ошибка, то возьмёт initial-value */
+  syntax: '<length>';
+  /* без наследования */
+  inherits: false;
+  /* начальное значение */
+  initial-value: 0px;
+}
+
+@property --anchor-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}

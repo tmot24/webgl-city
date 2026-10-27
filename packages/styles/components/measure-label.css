@@ -1,6 +1,9 @@
 .measure-label {
   position: absolute;
-  transform: translate(-50%, -140%); /* по центру над точкой */
+  /* точку привязки задают --x/--y (CSS-пиксели canvas); transform - без пересчёта раскладки */
+  left: 0;
+  top: 0;
+  transform: translate(var(--anchor-x), var(--anchor-y)) translate(-50%, -140%); /* по центру над точкой */
   padding: 2px 6px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.7);
