@@ -66,6 +66,10 @@ export class MeasureStore {
     }
   }
 
+  selectMeasurement({ id }: { id: number }) {
+    this.selectedId = id;
+  }
+
   remove({ id }: { id: number }) {
     const index = this.measurements.findIndex((item) => item.id === id);
     if (index !== -1) {

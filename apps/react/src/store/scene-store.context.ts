@@ -1,12 +1,7 @@
-import { createContext, useContext } from 'react';
+import { createRequiredContext } from '../shared/create-required-context';
 import { SceneStore } from './scene.store';
 
-// null по умолчанию: стор существует только внутри Scene
-export const SceneStoreContext = createContext<SceneStore | null>(null);
+const sceneStoreContext = createRequiredContext<SceneStore>({ name: 'SceneStoreContext' });
 
-// Стор сцены для компонентов внутри Scene - аналог inject(SceneStore) в Angular
-export function useSceneStore(): SceneStore {
-  const store = useContext(SceneStoreContext);
-  if (!store) throw new Error('useSceneStore: компонент должен быть внутри Scene (нет SceneStoreContext)');
-  return store;
-}
+export const SceneStoreContext = sceneStoreContext.Context;
+export const useSceneStore = sceneStoreContext.useValue;

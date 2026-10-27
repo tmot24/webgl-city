@@ -38,7 +38,6 @@ export class SceneViewport {
     const source = this.source();
     if (!source) return null;
 
-    source.size(); // зависимость: пересчёт при ресайзе (значение из clientWidth)
     const canvas = source.canvasRef().nativeElement;
 
     return createScreenProjector({
