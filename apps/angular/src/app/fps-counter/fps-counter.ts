@@ -7,7 +7,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { runAnimationFrame } from '@webgl-city/core/gl/run-animation-frame';
+import { fpsColor } from '@webgl-city/core/diagnostics/fps-color';
+import { observeFps } from '@webgl-city/core/diagnostics/observe-fps';
 
 @Component({
   imports: [],
@@ -17,33 +18,13 @@ import { runAnimationFrame } from '@webgl-city/core/gl/run-animation-frame';
 })
 export class FpsCounter {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly SAMPLE_MS = 500;
 
   protected readonly fps = signal(0);
-  protected readonly color = computed(() => {
-    const value = this.fps();
-    if (value >= 55) return '#7ddc7d';
-    if (value >= 30) return '#e6c04d';
-    return '#e06d6d';
-  });
+  protected readonly color = computed(() => fpsColor({ fps: this.fps() }));
 
   constructor() {
     afterNextRender(() => {
-      let frames = 0;
-      let elapsed = 0;
-
-      const stop = runAnimationFrame({
-        onFrame: ({ delta }) => {
-          frames++;
-          elapsed += delta;
-          if (elapsed >= this.SAMPLE_MS) {
-            this.fps.set(Math.round((frames * 1000) / elapsed)); // Кадров в секунду за окно
-            frames = 0;
-            elapsed = 0;
-          }
-        },
-      });
-
+      const stop = observeFps({ onSample: ({ fps }) => this.fps.set(fps) });
       this.destroyRef.onDestroy(stop);
     });
   }

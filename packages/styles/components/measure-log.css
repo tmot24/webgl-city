@@ -49,6 +49,7 @@
   cursor: pointer;
   font-size: var(--font-body);
   line-height: 1;
+  padding: 2px 4px 4px 4px;
 
   &:hover {
     opacity: 1;

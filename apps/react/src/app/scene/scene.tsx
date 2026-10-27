@@ -14,6 +14,7 @@ import { useBuildingPicker } from '../../features/building-pick/use-building-pic
 import { useMeasure } from '../../features/measure/use-measure';
 import { useRoute } from '../../features/route/use-route';
 import { useEscapeKey } from '../../interaction/use-escape-key';
+import { ModePanels } from './mode-panels';
 
 export function Scene() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,6 +45,7 @@ export function Scene() {
             <ControlHint />
             <ModeToolbar />
             <ModeHint />
+            <ModePanels />
           </div>
         </div>
       </SceneStoreContext>
