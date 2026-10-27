@@ -2,7 +2,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { vec3 } from 'gl-matrix';
 import { computed } from '@angular/core';
 import { MeasurePoint } from '@webgl-city/core/measure/create-measure-picker';
-import { Measurement } from '@webgl-city/core/measure/measurement';
+import { Measurement, MeasureSegment } from '@webgl-city/core/measure/measurement';
 
 // Поля с "_" - приватные: снаружи стора их не видно
 interface MeasureState {
@@ -33,14 +33,14 @@ export const MeasureStore = signalStore(
   withState<MeasureState>(initialState),
   withComputed(({ measurements, selectedId, _pendingPoint, _cursorPoint }) => ({
     // Активный отрезок: тянущаяся "резинка", либо выбранное готовое измерение
-    segment: computed(() => {
+    segment: computed((): MeasureSegment | null => {
       const start = _pendingPoint();
       if (start) {
         const cursor = _cursorPoint();
         return cursor ? { a: start, b: cursor } : null;
       }
-      const chosen = measurements().find(({ id }) => id === selectedId());
-      return chosen ? { a: chosen.a, b: chosen.b } : null;
+      // само измерение - уже MeasureSegment (a, b): отдаём ту же ссылку, а не новый объект
+      return measurements().find(({ id }) => id === selectedId()) ?? null;
     }),
   })),
   withMethods((store) => ({

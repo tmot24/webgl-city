@@ -77,7 +77,7 @@ export function injectCityRender({
     polyline: activePolyline(),
   }));
 
-  inject(SceneViewport).connect({ canvasRef, viewProjection, eyePoint, size });
+  inject(SceneViewport).connect({ canvasRef, viewProjection, eyePoint });
 
   let renderer: CityRenderer | null = null;
 

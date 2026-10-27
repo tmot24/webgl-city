@@ -9,8 +9,12 @@ export function injectCanvasSize({
 }: {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
 }): Signal<CanvasSize> {
-  // Размер буфера рисования (стандартный 300 на 150) в device-пикселях
-  const size = signal<CanvasSize>({ width: 300, height: 150 });
+  // Размер буфера рисования (стандартный 300 на 150) в device-пикселях;
+  // equal: новый объект с теми же числами - не изменение, подписчики не будятся
+  const size = signal<CanvasSize>(
+    { width: 300, height: 150 },
+    { equal: (a, b) => a.width === b.width && a.height === b.height },
+  );
   const destroyRef = inject(DestroyRef);
 
   // Один раз. useEffect с пустыми зависимостями []

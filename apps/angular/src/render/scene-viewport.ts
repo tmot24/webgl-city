@@ -1,13 +1,11 @@
 import { computed, ElementRef, Injectable, signal, Signal } from '@angular/core';
 import { mat4, vec3 } from 'gl-matrix';
-import { CanvasSize } from '@webgl-city/core/dom/observe-canvas-size';
 import { createScreenProjector, ScreenProjector } from '@webgl-city/core/ray/create-screen-projector';
 
 interface ViewportSource {
   canvasRef: Signal<ElementRef<HTMLCanvasElement>>;
   viewProjection: Signal<mat4>;
   eyePoint: Signal<vec3>;
-  size: Signal<CanvasSize>;
 }
 
 /**
