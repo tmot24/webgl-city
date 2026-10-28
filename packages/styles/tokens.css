@@ -1,0 +1,17 @@
+:root {
+  /* Типографика: единая шкала для всего UI поверх сцены (rem от корня 16px). */
+  --font-family: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --font-secondary: 0.875rem; /* 14px — координаты, fps, мелкое */
+  --font-body: 1rem; /* 16px — основной UI */
+  --font-title: 1.25rem; /* 20px — заголовки панелей */
+
+  --line-body: 1.4;
+
+  /* Цвета UI поверх сцены */
+  --color-text: #fff;
+  --color-panel-bg: rgba(0, 0, 0, 0.6);
+  --color-accent: #ffd24d; /* выбранное / привязка */
+  --color-accent-soft: rgba(255, 210, 77, 0.25);
+}

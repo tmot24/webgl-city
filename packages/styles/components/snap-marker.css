@@ -1,0 +1,13 @@
+.snap-marker {
+  position: absolute;
+  /* точку привязки задают --x/--y (CSS-пиксели canvas) */
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  transform: translate(var(--anchor-x), var(--anchor-y)) translate(-50%, -50%); /* центр кружка в точке */
+  border-radius: 50%;
+  border: 2px solid var(--color-accent);
+  background: var(--color-accent-soft);
+  pointer-events: none;
+}

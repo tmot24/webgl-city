@@ -1,0 +1,17 @@
+/* Таблица "название — значение" (dl) в панелях */
+.ui-stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 0;
+
+  & > dt {
+    opacity: 0.8;
+  }
+
+  & > dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}

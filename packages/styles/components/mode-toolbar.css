@@ -1,0 +1,35 @@
+.mode-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--color-panel-bg);
+  pointer-events: auto;
+  user-select: none;
+}
+
+.mode-toolbar__tab {
+  border: 0;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: transparent;
+  color: #ddd;
+  font-family: var(--font-family);
+  font-size: var(--font-body);
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.mode-toolbar__tab_active,
+.mode-toolbar__tab_active:hover {
+  background: #fff;
+  color: #111;
+}

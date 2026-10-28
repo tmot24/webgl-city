@@ -1,0 +1,30 @@
+.control-hint {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  max-width: 400px;
+  pointer-events: none;
+}
+
+.control-hint__title {
+  text-decoration: underline;
+}
+
+.control-hint__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-hint__item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.control-hint__action {
+  flex: 0 0 110px;
+}

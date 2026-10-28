@@ -24,22 +24,32 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npx ng build --configuration production --base-href /webgl-city/
+      - name: Build Angular
+        run: npm run build -w @webgl-city/angular -- --configuration production --base-href /webgl-city/angular/
 
-      - name: SPA fallback for GitHub Pages (client-side routing)
-        run: cp dist/webgl-city/browser/index.html dist/webgl-city/browser/404.html
+      - name: Build React
+        run: npm run build -w @webgl-city/react -- --base /webgl-city/react/
+
+      - name: Assemble site
+        run: |
+          mkdir -p site
+          # стартовая страница: выбор версии; она же 404 - неверный адрес ведёт к выбору
+          cp pages/index.html site/index.html
+          cp pages/index.html site/404.html
+          cp apps/angular/public/webgl.ico site/
+          cp -r apps/angular/dist/webgl-city/browser site/angular
+          cp -r apps/react/dist site/react
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/webgl-city/browser
+          path: site
 
   deploy:
     needs: build

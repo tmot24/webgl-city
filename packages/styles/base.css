@@ -1,0 +1,11 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  /* цвет неба сцены (clearColor 0.53, 0.7, 0.87): при загрузке и до первого кадра не белый экран */
+  background: rgb(135, 179, 222);
+}

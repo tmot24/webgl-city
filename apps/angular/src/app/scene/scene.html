@@ -1,0 +1,21 @@
+<canvas #canvas class="scene__canvas"></canvas>
+
+<div class="scene__overlay">
+  <app-control-hint />
+
+  <app-mode-toolbar />
+  <app-mode-hint />
+
+  @if (modeStore.is.building()) {
+    <app-building-info />
+  }
+  @if (modeStore.is.measure()) {
+    <app-measure-log />
+    <app-measure-label />
+    <app-snap-marker />
+  }
+
+  @if (modeStore.is.route()) {
+    <app-route-panel />
+  }
+</div>
