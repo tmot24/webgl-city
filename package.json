@@ -13,6 +13,13 @@
     "build:react": "npm run build -w @webgl-city/react",
     "typecheck:core": "npm run typecheck -w @webgl-city/core"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^22.22.3 || ^24.15.0 || >=26.0.0",
+      "onFail": "error"
+    }
+  },
   "devDependencies": {
     "prettier": "^3.8.1"
   }
